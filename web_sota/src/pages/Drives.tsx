@@ -40,7 +40,7 @@ export default function Drives() {
     try {
       const result = await scanPath(scanPathInput, scanDepth);
       if (result.success && result.data) {
-        setTreeData(result.data as TreeNode);
+        setTreeData(result.data as unknown as TreeNode);
       } else {
         setError(result.error || "Scan failed");
       }

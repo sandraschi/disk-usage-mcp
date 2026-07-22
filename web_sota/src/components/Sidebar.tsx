@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, HardDrive, Copy, Settings, ChevronLeft, ChevronRight, Disk } from "lucide-react";
+import { LayoutDashboard, HardDrive, Copy, Settings, ChevronLeft, ChevronRight, Monitor } from "lucide-react";
 
 interface SidebarProps {
   collapsed: boolean;
@@ -23,11 +23,11 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       <div className="flex items-center justify-between p-3 border-b border-zinc-800">
         {!collapsed && (
           <div className="flex items-center gap-2 text-amber-500 font-semibold">
-            <Disk className="h-5 w-5" />
+            <Monitor className="h-5 w-5" />
             <span>Disk Usage</span>
           </div>
         )}
-        {collapsed && <Disk className="h-5 w-5 text-amber-500 mx-auto" />}
+        {collapsed && <Monitor className="h-5 w-5 text-amber-500 mx-auto" />}
         <button
           onClick={onToggle}
           className="p-1 rounded hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200"

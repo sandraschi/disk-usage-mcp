@@ -13,7 +13,6 @@ build/
 .pytest_cache/
 htmlcov/
 target/
-native/
 reports/
 *.egg-info
 src/*.egg-info/

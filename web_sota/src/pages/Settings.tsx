@@ -1,4 +1,4 @@
-import { Settings as SettingsIcon, HardDrive } from "lucide-react";
+import { HardDrive } from "lucide-react";
 
 const DRIVE_SUGGESTIONS = [
   "D:\\Media",

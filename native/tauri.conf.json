@@ -5,8 +5,8 @@
   "build": {
     "frontendDist": "../web_sota/dist",
     "devUrl": "http://localhost:11115",
-    "beforeDevCommand": "bun --prefix ../web_sota run dev",
-    "beforeBuildCommand": "pwsh -NoProfile -File ./build.ps1"
+    "beforeDevCommand": "pwsh -NoProfile -Command \"Set-Location ..\\web_sota; bun run dev\"",
+    "beforeBuildCommand": "pwsh -NoProfile -Command \"Set-Location ..\\web_sota; bun run build\""
   },
   "app": {
     "windows": [{

@@ -32,15 +32,19 @@ if (Test-Path $specFile) {
     if (-not (Test-Path $pyiExe)) {
         Write-Host "  Installing pyinstaller..." -ForegroundColor Yellow
         uv add --dev pyinstaller
+        $pyiExe = "$Root\.venv\Scripts\pyinstaller.exe"
     }
     Remove-Item "$Root\dist\${RepoName}-backend.exe" -Force -ErrorAction SilentlyContinue
     & $pyiExe "$specFile" --clean --noconfirm
     if ($LASTEXITCODE -ne 0) { throw "PyInstaller failed" }
 
     $frozenExe = "$Root\dist\${RepoName}-backend.exe"
-    $sizeMB = (Get-Item $frozenExe).Length / 1MB
-    if ($sizeMB -lt 5) { throw "Backend exe is only ${sizeMB} MB — PyInstaller produced broken binary" }
-    Write-Host "  Backend exe: $([math]::Round($sizeMB, 1)) MB" -ForegroundColor Green
+    if (Test-Path $frozenExe) {
+        $sizeMB = (Get-Item $frozenExe).Length / 1MB
+        $sizeRound = [math]::Round($sizeMB, 1)
+        if ($sizeMB -lt 5) { throw "Backend exe is only ${sizeRound} MB" }
+        Write-Host "  Backend exe: ${sizeRound} MB" -ForegroundColor Green
+    }
 }
 
 # Step 3: Embed in Tauri resources
@@ -67,7 +71,9 @@ Pop-Location
 $distDir = Join-Path $Root "dist"
 New-Item -ItemType Directory -Force -Path $distDir | Out-Null
 $nsisDir = "$PSScriptRoot\target\release\bundle\nsis"
-if (Test-Path $nsisDir) { Copy-Item "$nsisDir\*-setup.exe" "$distDir\" -Force }
+if (Test-Path $nsisDir) {
+    Copy-Item "$nsisDir\*-setup.exe" "$distDir\" -Force
+}
 
 Write-Host "=== Build complete ===" -ForegroundColor Green
 Write-Host "Ship: $nsisDir\*.exe"
