@@ -1,0 +1,42 @@
+[project]
+name = "disk-usage-mcp"
+version = "0.1.0"
+description = "Multi-drive disk usage analysis with dua-cli and czkawka_cli — treemap visualisation, duplicate hunting, large file detection"
+requires-python = ">=3.12"
+dependencies = [
+    "fastmcp>=3.4.4,<4",
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.34.0",
+    "httpx>=0.28.0",
+    "prefab-ui>=0.14.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.9.0",
+    "pyinstaller>=6.0.0",
+]
+inspect = ["pymupdf"]
+
+[dependency-groups]
+dev = ["ruff>=0.9.0", "pyinstaller>=6.0.0"]
+
+[project.scripts]
+disk-usage-mcp = "disk_usage_mcp.server:main"
+
+[tool.ruff]
+target-version = "py313"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[build-system]
+requires = ["setuptools>=75.0"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[tool.setuptools.packages.find]
+where = ["src"]

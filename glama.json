@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "disk-usage": {
+      "command": "uv",
+      "args": ["run", "python", "-m", "disk_usage_mcp.server"],
+      "env": { "PYTHONPATH": "${workspaceFolder}/src" },
+      "capabilities": {
+        "tools": { "enabled": true },
+        "prompts": { "enabled": true }
+      },
+      "metadata": {
+        "version": "0.1.0",
+        "tags": ["disk", "storage", "duplicates", "utilities"],
+        "homepage": "https://github.com/sandraschi/disk-usage-mcp"
+      }
+    }
+  }
+}

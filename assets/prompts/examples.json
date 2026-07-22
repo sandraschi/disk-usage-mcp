@@ -1,0 +1,42 @@
+[
+  {
+    "tool": "get_drive_overview_tool",
+    "input": { "paths": ["C:\\", "D:\\", "E:\\", "F:\\", "G:\\"] },
+    "description": "Get overview of all drives"
+  },
+  {
+    "tool": "scan_path_tool",
+    "input": { "path": "D:\\Media", "max_depth": 3 },
+    "description": "Scan Media library at depth 3"
+  },
+  {
+    "tool": "scan_path_tool",
+    "input": { "path": "D:\\", "max_depth": 2 },
+    "description": "Shallow scan of D: drive"
+  },
+  {
+    "tool": "find_large_files_tool",
+    "input": { "path": "D:\\", "min_size_gb": 10.0 },
+    "description": "Find files over 10GB on D:"
+  },
+  {
+    "tool": "find_large_files_tool",
+    "input": { "path": "E:\\Backup", "min_size_gb": 5.0 },
+    "description": "Find files over 5GB on backup drive"
+  },
+  {
+    "tool": "find_duplicates_tool",
+    "input": { "search_paths": ["D:\\Media", "E:\\Backup"], "min_size_mb": 100 },
+    "description": "Find duplicates between Media and Backup"
+  },
+  {
+    "tool": "find_duplicates_tool",
+    "input": { "search_paths": ["C:\\Users", "D:\\Backup\\Users"], "min_size_mb": 50 },
+    "description": "Find user data duplicates"
+  },
+  {
+    "tool": "get_drive_overview_tool",
+    "input": { "paths": ["D:\\"] },
+    "description": "Quick check of D: drive usage"
+  }
+]

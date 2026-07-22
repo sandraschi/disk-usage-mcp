@@ -1,0 +1,17 @@
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+data/*.db
+data/*.sqlite3
+data/snapshots/
+.env
+dist/
+build/
+*.mcpb
+.ruff_cache/
+.pytest_cache/
+htmlcov/
+target/
+native/
+reports/

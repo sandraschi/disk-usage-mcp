@@ -1,0 +1,72 @@
+# disk-usage-mcp
+
+## Overview
+
+FastMCP server wrapping dua-cli and czkawka_cli for disk usage analysis and duplicate detection. Designed for multi-TB media libraries spread across multiple drives.
+
+## Dependencies
+
+- Python 3.12+
+- [dua-cli](https://github.com/Byron/dua-cli) — `winget install Byron.dua-cli`
+- [czkawka_cli](https://github.com/qarmin/czkawka) — `winget install qarmin.czkawka`
+- FastMCP 3.4+
+- FastAPI + uvicorn
+
+## Architecture
+
+```
+dua-cli ──→ disk-usage-mcp ──→ FastAPI REST ──→ React/Vite frontend
+czkawka_cli ──→   (MCP protocol)    ├── /api/health
+                                       ├── /api/scan
+                                       ├── /api/snapshot/take
+                                       ├── /api/snapshots
+                                       └── /api/v1/diagnostics
+```
+
+## MCP Tools
+
+### scan_path_tool
+```
+scan_path_tool(path="D:\\Media", max_depth=3)
+→ {"success": true, "data": {"name": "D:", "size": ..., "children": [...]}}
+```
+
+### find_large_files_tool
+```
+find_large_files_tool(path="D:\\", min_size_gb=5.0)
+→ {"success": true, "files": [{"path": "...", "size_gb": 5.2}]}
+```
+
+### get_drive_overview_tool
+```
+get_drive_overview_tool(paths=["C:\\", "D:\\", "E:\\", "F:\\"])
+→ {"success": true, "drives": [...], "total_bytes": ...}
+```
+
+### find_duplicates_tool
+```
+find_duplicates_tool(search_paths=["D:\\", "E:\\"], min_size_mb=100)
+→ {"success": true, "duplicates": [{"hash": "...", "size_mb": 500, "files": [...]}]}
+```
+
+## Best Practices
+
+1. Start with `get_drive_overview_tool` to see drive-level allocation
+2. Drill into specific drives with `scan_path_tool` at depth 2-3
+3. Use `find_large_files_tool` with min_size_gb=10+ for quick space recovery
+4. Run `find_duplicates_tool` across backup drives last (slowest operation)
+
+## Environment
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| BACKEND_PORT | 11114 | REST API port |
+| FRONTEND_PORT | 11115 | Vite dev port |
+| MCP_PORT | 11114 | MCP HTTP port |
+| DUA_BIN | dua | Path to dua binary |
+| CZKAWKA_BIN | czkawka_cli | Path to czkawka binary |
+
+## Ports
+
+- Backend (FastAPI): 11114
+- Frontend (Vite dev): 11115

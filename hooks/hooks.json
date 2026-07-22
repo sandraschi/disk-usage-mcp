@@ -1,0 +1,11 @@
+{
+  "hooks": {
+    "SessionStart": [{
+      "matcher": "",
+      "hooks": [{
+        "type": "text",
+        "text": "## Session Context (Disk Usage MCP)\n\nYou have access to a disk usage analysis server with 4 tools:\nscan_path_tool, find_large_files_tool, get_drive_overview_tool, find_duplicates_tool.\nThe server wraps dua-cli and czkawka_cli for fast filesystem analysis.\n\n**Before starting work:**\n1. Check drive overview: get_drive_overview_tool(paths=[\"D:\\\\\", \"E:\\\\\", \"F:\\\\\"])\n2. If the task references a specific path, scan it: scan_path_tool(path=\"D:\\\\\", max_depth=2)\n\n**At end of work:**\n- Report reclaimable space found from large files or duplicates"
+      }]
+    }]
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "disk-usage-mcp",
+  "version": "0.1.0",
+  "description": "Disk usage analysis and duplicate detection MCP server",
+  "hooks": "../hooks/hooks.json"
+}

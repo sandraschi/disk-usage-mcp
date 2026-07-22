@@ -1,0 +1,16 @@
+# disk-usage-mcp
+
+FastMCP server for disk usage analysis, duplicate detection, and multi-drive visualization.
+
+## Quick links
+
+- [llms-full.txt](./llms-full.txt) — Full documentation
+- [README.md](./README.md) — Setup and usage
+- [Source](https://github.com/sandraschi/disk-usage-mcp)
+
+## Tools
+
+- **scan_path_tool** — Scan a drive with dua-cli, return JSON hierarchy
+- **find_large_files_tool** — Find files above size threshold
+- **get_drive_overview_tool** — Aggregate across multiple drives
+- **find_duplicates_tool** — Find duplicates with czkawka_cli
