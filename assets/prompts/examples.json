@@ -1,42 +1,41 @@
 [
-  {
-    "tool": "get_drive_overview_tool",
-    "input": { "paths": ["C:\\", "D:\\", "E:\\", "F:\\", "G:\\"] },
-    "description": "Get overview of all drives"
-  },
-  {
-    "tool": "scan_path_tool",
-    "input": { "path": "D:\\Media", "max_depth": 3 },
-    "description": "Scan Media library at depth 3"
-  },
-  {
-    "tool": "scan_path_tool",
-    "input": { "path": "D:\\", "max_depth": 2 },
-    "description": "Shallow scan of D: drive"
-  },
-  {
-    "tool": "find_large_files_tool",
-    "input": { "path": "D:\\", "min_size_gb": 10.0 },
-    "description": "Find files over 10GB on D:"
-  },
-  {
-    "tool": "find_large_files_tool",
-    "input": { "path": "E:\\Backup", "min_size_gb": 5.0 },
-    "description": "Find files over 5GB on backup drive"
-  },
-  {
-    "tool": "find_duplicates_tool",
-    "input": { "search_paths": ["D:\\Media", "E:\\Backup"], "min_size_mb": 100 },
-    "description": "Find duplicates between Media and Backup"
-  },
-  {
-    "tool": "find_duplicates_tool",
-    "input": { "search_paths": ["C:\\Users", "D:\\Backup\\Users"], "min_size_mb": 50 },
-    "description": "Find user data duplicates"
-  },
-  {
-    "tool": "get_drive_overview_tool",
-    "input": { "paths": ["D:\\"] },
-    "description": "Quick check of D: drive usage"
-  }
+  {"tool": "get_drive_overview", "input": {"paths": ["C:\\", "D:\\", "E:\\", "F:\\", "G:\\"]}, "description": "Full drive overview — all spinners"},
+  {"tool": "get_drive_overview", "input": {"paths": ["D:\\"]}, "description": "Quick check of D: drive only"},
+  {"tool": "get_drive_overview", "input": {"paths": ["C:\\", "D:\\"]}, "description": "Compare C: and D: usage"},
+  {"tool": "get_drive_overview", "input": {"paths": ["E:\\Backup1", "F:\\Backup2"]}, "description": "Backup drive pair overview"},
+  {"tool": "scan_path", "input": {"path": "D:\\Media", "max_depth": 2}, "description": "Top-level media library breakdown"},
+  {"tool": "scan_path", "input": {"path": "D:\\Media\\Movies", "max_depth": 3}, "description": "Movie folder structure"},
+  {"tool": "scan_path", "input": {"path": "D:\\Media\\TV", "max_depth": 2}, "description": "TV show collection overview"},
+  {"tool": "scan_path", "input": {"path": "D:\\Media\\Music", "max_depth": 3}, "description": "Music library tree"},
+  {"tool": "scan_path", "input": {"path": "D:\\Pinokio", "max_depth": 2}, "description": "Pinokio app storage check"},
+  {"tool": "scan_path", "input": {"path": "D:\\models", "max_depth": 3}, "description": "AI model directory structure"},
+  {"tool": "scan_path", "input": {"path": "C:\\Users\\sandr", "max_depth": 2}, "description": "User profile size breakdown"},
+  {"tool": "scan_path", "input": {"path": "D:\\", "max_depth": 1}, "description": "Ultra-shallow D: overview"},
+  {"tool": "scan_path", "input": {"path": "E:\\", "max_depth": 2}, "description": "Backup drive top-level scan"},
+  {"tool": "scan_path", "input": {"path": "D:\\Downloads", "max_depth": 4}, "description": "Deep scan of downloads folder"},
+  {"tool": "scan_path", "input": {"path": "C:\\Program Files", "max_depth": 2}, "description": "Program Files size audit"},
+  {"tool": "find_large_files", "input": {"path": "D:\\", "min_size_gb": 50, "limit": 20}, "description": "Find files over 50 GB on D:"},
+  {"tool": "find_large_files", "input": {"path": "D:\\", "min_size_gb": 10, "limit": 50}, "description": "Find files over 10 GB on D:"},
+  {"tool": "find_large_files", "input": {"path": "D:\\", "min_size_gb": 5, "limit": 100}, "description": "Find files over 5 GB on D:"},
+  {"tool": "find_large_files", "input": {"path": "D:\\", "min_size_gb": 1, "limit": 200}, "description": "Find all files over 1 GB on D:"},
+  {"tool": "find_large_files", "input": {"path": "E:\\", "min_size_gb": 10, "limit": 50}, "description": "Find files over 10 GB on backup drive"},
+  {"tool": "find_large_files", "input": {"path": "C:\\", "min_size_gb": 1, "limit": 100}, "description": "Find large files on system drive"},
+  {"tool": "find_large_files", "input": {"path": "D:\\Media", "min_size_gb": 20, "limit": 30}, "description": "Find oversized media files"},
+  {"tool": "find_large_files", "input": {"path": "D:\\Pinokio", "min_size_gb": 5, "limit": 50}, "description": "Find large model downloads"},
+  {"tool": "find_large_files", "input": {"path": "D:\\Downloads", "min_size_gb": 1, "limit": 100}, "description": "Find large installer ISOs in Downloads"},
+  {"tool": "find_large_files", "input": {"path": "D:\\Backup", "min_size_gb": 10, "limit": 30}, "description": "Large backup files"},
+  {"tool": "find_duplicates", "input": {"paths": ["D:\\Media", "E:\\Backup1"], "min_size_mb": 500}, "description": "Media vs backup duplicates (fast)"},
+  {"tool": "find_duplicates", "input": {"paths": ["D:\\Media", "E:\\Backup1", "F:\\Backup2"], "min_size_mb": 100}, "description": "Cross-spinner media dupes"},
+  {"tool": "find_duplicates", "input": {"paths": ["D:\\Pinokio\\models", "D:\\ollama\\models", "D:\\hf-cache"], "min_size_mb": 1000}, "description": "AI model dedup across tool dirs"},
+  {"tool": "find_duplicates", "input": {"paths": ["D:\\Downloads", "E:\\Backup1\\Downloads"], "min_size_mb": 100}, "description": "Downloads vs backup duplicates"},
+  {"tool": "find_duplicates", "input": {"paths": ["C:\\Users\\sandr\\Documents", "E:\\Backup1\\Documents"], "min_size_mb": 10}, "description": "Document duplicates (low threshold)"},
+  {"tool": "find_duplicates", "input": {"paths": ["D:\\Media\\Music", "D:\\Media\\Music_Backup"], "min_size_mb": 50}, "description": "Music library duplicates"},
+  {"tool": "find_duplicates", "input": {"paths": ["D:\\Media\\Photos", "E:\\Backup1\\Photos"], "min_size_mb": 10}, "description": "Photo library duplicates"},
+  {"tool": "find_duplicates", "input": {"paths": ["D:\\", "E:\\"], "min_size_mb": 500}, "description": "Full drive pair scan (slow)"},
+  {"tool": "disk_usage", "input": {"operation": "scan", "path": "D:\\Media", "max_depth": 2}, "description": "Portmanteau scan of Media"},
+  {"tool": "disk_usage", "input": {"operation": "tree", "path": "D:\\", "max_depth": 2}, "description": "Portmanteau tree output"},
+  {"tool": "disk_usage", "input": {"operation": "drive_overview", "paths": ["D:\\", "E:\\"]}, "description": "Portmanteau drive overview"},
+  {"tool": "disk_usage", "input": {"operation": "scan", "path": "C:\\Users", "max_depth": 3}, "description": "Portmanteau user dir scan"},
+  {"tool": "disk_usage", "input": {"operation": "tree", "path": "D:\\Pinokio", "max_depth": 2}, "description": "Portmanteau tree of model dir"},
+  {"tool": "disk_usage", "input": {"operation": "drive_overview", "paths": ["D:\\", "E:\\", "F:\\", "G:\\"]}, "description": "Portmanteau all-drive overview"}
 ]

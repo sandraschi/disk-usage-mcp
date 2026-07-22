@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "disk-usage": {
+    "diskops": {
       "command": "uv",
       "args": ["run", "python", "-m", "disk_usage_mcp.server"],
       "env": { "PYTHONPATH": "${workspaceFolder}/src" },

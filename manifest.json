@@ -1,0 +1,26 @@
+{
+  "manifest_version": "0.2",
+  "name": "disk-usage-mcp",
+  "version": "0.1.0",
+  "description": "Multi-drive disk usage analysis with dua-cli and czkawka_cli — treemap visualisation, duplicate hunting, large file detection",
+  "author": { "name": "Sandra Schipal" },
+  "server": {
+    "type": "python",
+    "entry_point": "src/disk_usage_mcp/server.py",
+    "mcp_config": {
+      "command": "uv",
+      "args": ["run", "--directory", "${PWD}", "python", "-m", "disk_usage_mcp.server"],
+      "env": {
+        "PYTHONPATH": "${PWD}/src",
+        "PYTHONUNBUFFERED": "1"
+      }
+    }
+  },
+  "tools": [
+    { "name": "scan_path", "description": "Scan a drive or folder using dua-cli, returning structured JSON hierarchy of space usage" },
+    { "name": "find_large_files", "description": "Find files above a size threshold via deep dua tree walk" },
+    { "name": "get_drive_overview", "description": "Aggregate disk usage across multiple drives at depth 1" },
+    { "name": "find_duplicates", "description": "Find duplicate files using czkawka_cli across given paths" },
+    { "name": "disk_usage", "description": "Portmanteau: scan (JSON tree), tree (human-readable), drive_overview (multi-drive)" }
+  ]
+}

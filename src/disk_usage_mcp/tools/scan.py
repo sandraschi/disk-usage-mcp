@@ -23,6 +23,7 @@ async def scan_path(
 async def find_large_files(
     path: Annotated[str, Field(description="Filesystem path to search")],
     min_size_gb: Annotated[float, Field(description="Minimum file size in gigabytes", ge=0.1)] = 1.0,
+    limit: Annotated[int, Field(description="Max results to return", ge=1, le=500)] = 50,
 ) -> dict:
     """Find large files on a drive or folder.
 
@@ -40,11 +41,15 @@ async def find_large_files(
     min_bytes = int(min_size_gb * 1024 * 1024 * 1024)
 
     def walk(node, prefix=""):
+        if len(large_files) >= limit:
+            return
         node_path = node.get("name", "")
         full = f"{prefix}\\{node_path}" if prefix else node_path
         if "children" in node:
             for child in node.get("children", []):
                 walk(child, full)
+                if len(large_files) >= limit:
+                    return
         else:
             size = node.get("size", 0)
             if size >= min_bytes:
@@ -54,4 +59,4 @@ async def find_large_files(
         walk(result["data"])
 
     large_files.sort(key=lambda f: f["size_gb"], reverse=True)
-    return {"success": True, "files": large_files}
+    return {"success": True, "files": large_files[:limit]}

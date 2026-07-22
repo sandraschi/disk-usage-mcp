@@ -52,6 +52,26 @@ mcpb-pack:
 test:
     uv run pytest tests/ -v
 
+# Build the PyInstaller backend .exe and copy to Tauri resources
+build-sidecar:
+    pwsh -NoProfile -File '{{justfile_directory()}}\native\build.ps1'
+
+# Build the Tauri NSIS desktop installer (full pipeline)
+build-native:
+    $env:Path = "$env:USERPROFILE\.cargo\bin;$env:Path"
+    Set-Location '{{justfile_directory()}}\native'
+    .\build.ps1
+
+# Build Tauri native app (debug, skip PyInstaller)
+build-native-debug:
+    $env:Path = "$env:USERPROFILE\.cargo\bin;$env:Path"
+    Set-Location '{{justfile_directory()}}\native'
+    npx @tauri-apps/cli build --debug
+
+# Run CUA-NSIS smoke test (install -> launch -> verify -> uninstall)
+cua-nsis-test:
+    uv run python scripts/cua-smoke.py
+
 # Build full pipeline (lint -> typecheck -> test -> build)
 build: lint fmt-check test tsc webapp-build
     Write-Host "Build complete" -ForegroundColor Green
