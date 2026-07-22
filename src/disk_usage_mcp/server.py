@@ -7,6 +7,7 @@ import os
 from fastmcp import FastMCP
 
 from disk_usage_mcp.tools.disk_usage import disk_usage
+from disk_usage_mcp.tools.dj import parse_dj_database
 from disk_usage_mcp.tools.duplicates import find_duplicates
 from disk_usage_mcp.tools.overview import get_drive_overview
 from disk_usage_mcp.tools.scan import find_large_files, scan_path
@@ -24,6 +25,7 @@ mcp.tool(name="find_large_files", annotations={"readonly": True})(find_large_fil
 mcp.tool(name="get_drive_overview", annotations={"readonly": True})(get_drive_overview)
 mcp.tool(name="find_duplicates", annotations={"readonly": True})(find_duplicates)
 mcp.tool(name="disk_usage", annotations={"readonly": True})(disk_usage)
+mcp.tool(name="parse_dj_database", annotations={"readonly": True})(parse_dj_database)
 
 
 @mcp.resource("drive://list", name="drives", description="List available drives.")
