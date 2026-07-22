@@ -1,17 +1,20 @@
 from typing import Annotated, Literal
+
 from pydantic import Field
 
 from disk_usage_mcp.runner import run_dua, run_dua_tree
-from disk_usage_mcp.tools.utils import _error_response, _README_ONLY
+from disk_usage_mcp.tools.utils import _error_response
 
 
 async def disk_usage(
     operation: Annotated[Literal["scan", "tree", "drive_overview"], Field(description="Operation to perform.")],
     path: Annotated[str | None, Field(description="Target path (required for scan, tree).")] = None,
     max_depth: Annotated[int, Field(description="Max directory depth.", ge=1, le=10)] = 3,
-    paths: Annotated[list[str] | None, Field(description="Drive paths for overview (required for drive_overview).")] = None,
+    paths: Annotated[
+        list[str] | None, Field(description="Drive paths for overview (required for drive_overview).")
+    ] = None,
 ) -> dict:
-    """[RATIONALE] Portmanteau consolidating dua-cli operations — scan returns structured JSON tree, tree returns human-readable output, drive_overview returns aggregate stats across drives.
+    """[RATIONALE] Portmanteau consolidating dua-cli operations.
 
     Operations:
     - scan: JSON hierarchy with sizes per directory

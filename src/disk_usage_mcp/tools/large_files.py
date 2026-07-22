@@ -1,8 +1,9 @@
 from typing import Annotated
+
 from pydantic import Field
 
 from disk_usage_mcp.runner import run_find_large
-from disk_usage_mcp.tools.utils import _error_response, _README_ONLY
+from disk_usage_mcp.tools.utils import _error_response
 
 
 async def find_large_files(

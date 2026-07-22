@@ -1,6 +1,6 @@
-import os
-import json
 import datetime
+import json
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from disk_usage_mcp.config import BACKEND_PORT, SNAPSHOTS_DIR, logger
+from disk_usage_mcp.config import BACKEND_PORT, SNAPSHOTS_DIR
 from disk_usage_mcp.runner import run_dua
 
 
@@ -118,12 +118,14 @@ async def list_snapshots():
     for f in files:
         try:
             data = json.loads(f.read_text())
-            result.append({
-                "file": f.name,
-                "timestamp": data.get("timestamp", ""),
-                "label": data.get("label", ""),
-                "paths": data.get("paths", []),
-            })
+            result.append(
+                {
+                    "file": f.name,
+                    "timestamp": data.get("timestamp", ""),
+                    "label": data.get("label", ""),
+                    "paths": data.get("paths", []),
+                }
+            )
         except (json.JSONDecodeError, OSError):
             result.append({"file": f.name, "timestamp": "", "label": "", "paths": []})
     return {"snapshots": result}

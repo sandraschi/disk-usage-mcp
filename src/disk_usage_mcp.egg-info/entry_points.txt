@@ -1,0 +1,2 @@
+[console_scripts]
+disk-usage-mcp = disk_usage_mcp.server:main

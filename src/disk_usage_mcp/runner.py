@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import shutil
-from typing import Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +14,7 @@ def _resolve_binary(name: str) -> str:
     return resolved
 
 
-async def _run(cmd: list[str], timeout: int = 120) -> Tuple[str, str, int]:
+async def _run(cmd: list[str], timeout: int = 120) -> tuple[str, str, int]:
     """Run a subprocess asynchronously and return (stdout, stderr, returncode)."""
     proc = await asyncio.create_subprocess_exec(
         *cmd,
@@ -25,7 +24,7 @@ async def _run(cmd: list[str], timeout: int = 120) -> Tuple[str, str, int]:
     try:
         stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=timeout)
         return stdout.decode("utf-8", errors="replace"), stderr.decode("utf-8", errors="replace"), proc.returncode or 0
-    except asyncio.TimeoutError:
+    except TimeoutError:
         proc.kill()
         await proc.wait()
         msg = f"Command timed out after {timeout}s: {' '.join(cmd)}"
@@ -41,6 +40,7 @@ async def run_dua(path: str, max_depth: int = 3) -> dict:
     if rc != 0:
         return {"success": False, "error": stderr or f"dua exited with code {rc}"}
     import json
+
     try:
         data = json.loads(stdout)
         return {"success": True, "data": data}
@@ -67,9 +67,11 @@ async def run_czkawka_dups(paths: list[str], min_size_mb: int = 100) -> dict:
     if rc != 0:
         return {"success": False, "error": stderr or f"czkawka_cli exited with code {rc}"}
     import json
+
     try:
         data = json.loads(stdout)
-        return {"success": True, "files": data.get("duplicate_files", data.get("files", [])), "total_size": data.get("total_size", 0)}
+        files = data.get("duplicate_files", data.get("files", []))
+        return {"success": True, "files": files, "total_size": data.get("total_size", 0)}
     except json.JSONDecodeError:
         return {"success": True, "raw_output": stdout}
 
@@ -77,7 +79,6 @@ async def run_czkawka_dups(paths: list[str], min_size_mb: int = 100) -> dict:
 async def run_find_large(path: str, min_size_gb: float = 1.0, limit: int = 50) -> dict:
     """Find large files using a fast filesystem traversal (dua or direct)."""
     binary = _resolve_binary("dua")
-    min_bytes = int(min_size_gb * 1024 * 1024 * 1024)
     cmd = [binary, "--format", "json", "--max-depth", "1", path]
     stdout, stderr, rc = await _run(cmd, timeout=120)
     if rc != 0:

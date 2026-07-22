@@ -30,10 +30,12 @@ async def find_duplicates(
             if isinstance(group, dict):
                 files = group.get("files", []) or group.get("path", [])
                 size = group.get("size", 0) or group.get("bytes", 0)
-                duplicates.append({
-                    "hash": group.get("hash", ""),
-                    "size_mb": round(size / (1024 * 1024), 2),
-                    "files": files if isinstance(files, list) else [files],
-                })
+                duplicates.append(
+                    {
+                        "hash": group.get("hash", ""),
+                        "size_mb": round(size / (1024 * 1024), 2),
+                        "files": files if isinstance(files, list) else [files],
+                    }
+                )
         return {"success": True, "duplicates": duplicates}
     return {"success": True, "duplicates": []}

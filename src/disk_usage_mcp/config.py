@@ -1,5 +1,5 @@
-import os
 import logging
+import os
 
 BACKEND_PORT = int(os.getenv("BACKEND_PORT", "11114"))
 FRONTEND_PORT = int(os.getenv("FRONTEND_PORT", "11115"))

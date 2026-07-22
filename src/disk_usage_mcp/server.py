@@ -1,60 +1,75 @@
-import sys
+"""Disk Usage MCP Server — FastMCP 3.4+ with FastAPI REST backend."""
+
+import asyncio
+import logging
 import os
 
 from fastmcp import FastMCP
 
-from disk_usage_mcp.config import logger
 from disk_usage_mcp.tools.disk_usage import disk_usage
 from disk_usage_mcp.tools.duplicates import find_duplicates
-from disk_usage_mcp.tools.large_files import find_large_files
+from disk_usage_mcp.tools.overview import get_drive_overview
+from disk_usage_mcp.tools.scan import find_large_files, scan_path
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s %(message)s")
+logger = logging.getLogger("disk-usage-mcp")
 
 mcp = FastMCP(
     "disk-usage-mcp",
+    description="Multi-drive disk usage analysis with dua-cli and czkawka_cli",
     version="0.1.0",
-    description="Disk usage analysis, duplicate detection, and drive visualization",
 )
 
-mcp.tool(name="disk_usage", annotations={"readonly": True})(disk_usage)
-mcp.tool(name="find_duplicates", annotations={"readonly": True})(find_duplicates)
+mcp.tool(name="scan_path", annotations={"readonly": True})(scan_path)
 mcp.tool(name="find_large_files", annotations={"readonly": True})(find_large_files)
+mcp.tool(name="get_drive_overview", annotations={"readonly": True})(get_drive_overview)
+mcp.tool(name="find_duplicates", annotations={"readonly": True})(find_duplicates)
+mcp.tool(name="disk_usage", annotations={"readonly": True})(disk_usage)
 
 
-@mcp.prompt()
-def disk_usage_help(topic: str = "") -> str:
-    """Get help on disk-usage-mcp tools and workflows.
+@mcp.resource("drive://list", name="drives", description="List available drives.")
+async def list_drives() -> str:
+    """List available drive letters with usage stats."""
+    import shutil
 
-    Topics: scan, duplicates, overview, large-files, best-practices
-    """
-    help_texts = {
-        "": """# disk-usage-mcp Help
-
-Tools:
-- disk_usage — Portmanteau: scan (JSON tree), tree, drive_overview
-- find_large_files — Find files above size threshold
-- find_duplicates — Find duplicates with czkawka_cli
-
-Best practices:
-- Start with disk_usage(operation="drive_overview", paths=[...])
-- Drill with disk_usage(operation="scan", path=..., max_depth=2)
-- Use find_large_files for quick space recovery
-- Run find_duplicates last (slowest)
-""",
-        "scan": "disk_usage(operation=\"scan\", path=\"D:\\Media\", max_depth=3)",
-        "tree": "disk_usage(operation=\"tree\", path=\"D:\\\", max_depth=2)",
-        "duplicates": 'find_duplicates(search_paths=["D:\\", "E:\\"], min_size_mb=100)',
-        "overview": 'disk_usage(operation="drive_overview", paths=["C:\\", "D:\\", "E:\\"])',
-        "large-files": 'find_large_files(path="D:\\Media", min_size_gb=5.0)',
-        "best-practices": "1) Overview first 2) Drill with scan 3) Large files 4) Duplicates last",
-    }
-    return help_texts.get(topic, help_texts[""])
+    drives = []
+    for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+        try:
+            path = f"{letter}:\\"
+            usage = shutil.disk_usage(path)
+            drives.append(
+                {
+                    "drive": path,
+                    "total_gb": round(usage.total / (1024**3), 1),
+                    "used_gb": round((usage.total - usage.free) / (1024**3), 1),
+                    "free_gb": round(usage.free / (1024**3), 1),
+                    "percent_used": round((1 - usage.free / usage.total) * 100, 1) if usage.total else 0,
+                }
+            )
+        except Exception:
+            continue
+    return "\n".join(f"{d['drive']}: {d['used_gb']}/{d['total_gb']} GB ({d['percent_used']}%)" for d in drives)
 
 
 def main():
     port = os.environ.get("MCP_PORT") or os.environ.get("PORT")
     if port:
-        host = os.environ.get("MCP_HOST", "127.0.0.1")
-        sys.argv = ["disk-usage-mcp", "--mode", "http", "--host", host, "--port", str(port)]
-    mcp.run()
+        _run_http(int(port))
+    else:
+        asyncio.run(mcp.run_stdio_async())
+
+
+def _run_http(port: int):
+    """Start the FastAPI HTTP server (REST + MCP streamable HTTP)."""
+    host = os.environ.get("MCP_HOST", "127.0.0.1")
+    import uvicorn
+
+    from disk_usage_mcp.http_app import app as fastapi_app
+
+    fastapi_app.mount("/mcp", app=mcp.http_app())
+
+    logger.info("Starting HTTP server on %s:%s", host, port)
+    uvicorn.run(fastapi_app, host=host, port=port, log_level="info")
 
 
 if __name__ == "__main__":
