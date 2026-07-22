@@ -4,7 +4,7 @@
       "matcher": "",
       "hooks": [{
         "type": "text",
-        "text": "## Session Context (Disk Usage MCP)\n\nYou have access to a disk usage analysis server with 4 tools:\nscan_path_tool, find_large_files_tool, get_drive_overview_tool, find_duplicates_tool.\nThe server wraps dua-cli and czkawka_cli for fast filesystem analysis.\n\n**Before starting work:**\n1. Check drive overview: get_drive_overview_tool(paths=[\"D:\\\\\", \"E:\\\\\", \"F:\\\\\"])\n2. If the task references a specific path, scan it: scan_path_tool(path=\"D:\\\\\", max_depth=2)\n\n**At end of work:**\n- Report reclaimable space found from large files or duplicates"
+        "text": "## Session Context (Disk Usage MCP)\n\nYou have access to a disk usage analysis server with 5 tools:\nscan_path, find_large_files, get_drive_overview, find_duplicates, disk_usage.\nThe server wraps dua-cli and czkawka_cli for fast filesystem analysis.\n\n**Before starting work:**\n1. Check drive overview: get_drive_overview(paths=[\"D:\\\\\", \"E:\\\\\", \"F:\\\\\"])\n2. Scan a path: scan_path(path=\"D:\\\\\", max_depth=2)\n3. Portmanteau for grouped ops: disk_usage(operation=\"scan\", path=\"D:\\\\\")\n\n**At end of work:**\n- Report reclaimable space found from large files or duplicates"
       }]
     }]
   }

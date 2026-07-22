@@ -16,7 +16,6 @@ logger = logging.getLogger("disk-usage-mcp")
 
 mcp = FastMCP(
     "disk-usage-mcp",
-    description="Multi-drive disk usage analysis with dua-cli and czkawka_cli",
     version="0.1.0",
 )
 

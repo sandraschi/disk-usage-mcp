@@ -48,6 +48,10 @@ webapp-build:
 mcpb-pack:
     mcpb pack . dist/disk-usage-mcp-v0.1.0.mcpb
 
-# Build full pipeline (lint -> typecheck -> build)
-build: lint fmt-check tsc webapp-build
+# Run tests
+test:
+    uv run pytest tests/ -v
+
+# Build full pipeline (lint -> typecheck -> test -> build)
+build: lint fmt-check test tsc webapp-build
     Write-Host "Build complete" -ForegroundColor Green
