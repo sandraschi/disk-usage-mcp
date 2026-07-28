@@ -1,10 +1,10 @@
 """Tests for the DJ library parser tools."""
 
 import os
-import xml.etree.ElementTree as ET
 import tempfile
+import xml.etree.ElementTree as ET
 
-from disk_usage_mcp.tools.dj import _parse_virtualdj_xml, _parse_serato_db, _auto_detect_database, parse_dj_database
+from disk_usage_mcp.tools.dj import _auto_detect_database, _parse_serato_db, _parse_virtualdj_xml, parse_dj_database
 
 
 def _make_vdj_xml(tracks: list[dict]) -> str:
@@ -30,10 +30,29 @@ def test_parse_virtualdj_xml_empty():
 
 
 def test_parse_virtualdj_xml_tracks():
-    xml = _make_vdj_xml([
-        {"Title": "Test Track", "Artist": "Test Artist", "File": "D:\\Music\\test.mp3", "PlayCount": "5", "Length": "240", "BitRate": "320", "BPM": "128", "Type": "mp3"},
-        {"Title": "Unplayed", "Artist": "Artist2", "File": "D:\\Music\\unplayed.flac", "PlayCount": "0", "Length": "360", "BitRate": "0", "Type": "flac"},
-    ])
+    xml = _make_vdj_xml(
+        [
+            {
+                "Title": "Test Track",
+                "Artist": "Test Artist",
+                "File": "D:\\Music\\test.mp3",
+                "PlayCount": "5",
+                "Length": "240",
+                "BitRate": "320",
+                "BPM": "128",
+                "Type": "mp3",
+            },
+            {
+                "Title": "Unplayed",
+                "Artist": "Artist2",
+                "File": "D:\\Music\\unplayed.flac",
+                "PlayCount": "0",
+                "Length": "360",
+                "BitRate": "0",
+                "Type": "flac",
+            },
+        ]
+    )
     with tempfile.NamedTemporaryFile(mode="w", suffix=".xml", delete=False) as f:
         f.write(xml)
         p = f.name
@@ -83,6 +102,7 @@ def test_auto_detect_returns_none_on_clean_machine():
 
 def test_parse_dj_database_no_db():
     import asyncio
+
     result = asyncio.run(parse_dj_database())
     assert not result["success"]
     assert result["error_type"] == "not_found"

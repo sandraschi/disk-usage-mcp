@@ -2,7 +2,7 @@
 
 import pytest
 
-from disk_usage_mcp.runner import _run, _resolve_binary
+from disk_usage_mcp.runner import _resolve_binary, _run
 
 
 @pytest.mark.asyncio

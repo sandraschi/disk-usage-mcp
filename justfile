@@ -2,7 +2,7 @@ set windows-shell := ["powershell.exe", "-NoProfile", "-Command"]
 
 # Start the full stack (backend + frontend)
 serve:
-    pwsh -NoProfile -File "{{justfile_directory()}}\start.ps1"
+    powershell.exe -NoProfile -File "{{justfile_directory()}}\start.ps1"
 
 # Run backend only (stdio mode)
 mcp-serve:
@@ -54,7 +54,7 @@ test:
 
 # Build the PyInstaller backend .exe and copy to Tauri resources
 build-sidecar:
-    pwsh -NoProfile -File '{{justfile_directory()}}\native\build.ps1'
+    powershell.exe -NoProfile -File '{{justfile_directory()}}\native\build.ps1'
 
 # Build the Tauri NSIS desktop installer (full pipeline)
 build-native:

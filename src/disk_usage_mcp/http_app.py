@@ -31,8 +31,13 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="disk-usage-mcp API",
     version="0.1.0",
-    lifespan=lifespan,
 )
+
+
+@app.on_event("startup")
+async def _startup():
+    os.makedirs(SNAPSHOTS_DIR, exist_ok=True)
+
 
 _tauri = os.environ.get("DISK_USAGE_TAURI", "").lower() in ("1", "true", "yes")
 app.add_middleware(

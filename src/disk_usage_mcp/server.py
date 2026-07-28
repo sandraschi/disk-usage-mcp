@@ -67,7 +67,9 @@ def _run_http(port: int):
 
     from disk_usage_mcp.http_app import app as fastapi_app
 
-    fastapi_app.mount("/mcp", app=mcp.http_app())
+    _mcp_http = mcp.http_app()
+    fastapi_app.router.lifespan_context = _mcp_http.lifespan
+    fastapi_app.mount("/mcp", app=_mcp_http)
 
     logger.info("Starting HTTP server on %s:%s", host, port)
     uvicorn.run(fastapi_app, host=host, port=port, log_level="info")

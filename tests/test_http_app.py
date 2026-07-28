@@ -7,6 +7,7 @@ from httpx import ASGITransport, AsyncClient
 @pytest.fixture
 def client():
     from disk_usage_mcp.http_app import app
+
     transport = ASGITransport(app=app)
     return AsyncClient(transport=transport, base_url="http://test")
 
