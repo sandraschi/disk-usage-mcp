@@ -7,6 +7,7 @@ const BACKEND_PORT = 11114;
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
+    host: "127.0.0.1",
     port: 11115,
     proxy: {
       "/api": { target: `http://127.0.0.1:${BACKEND_PORT}`, changeOrigin: true },

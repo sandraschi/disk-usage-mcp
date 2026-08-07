@@ -75,3 +75,9 @@ cua-nsis-test:
 # Build full pipeline (lint -> typecheck -> test -> build)
 build: lint fmt-check test tsc webapp-build
     Write-Host "Build complete" -ForegroundColor Green
+
+# Bootstrap: install dev deps + pre-commit hook
+bootstrap:
+    uv sync --group dev
+    uv run pre-commit install
+    Write-Host "Pre-commit hooks installed." -ForegroundColor Green
