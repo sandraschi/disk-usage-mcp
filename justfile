@@ -52,6 +52,13 @@ mcpb-pack:
 test:
     uv run pytest tests/ -v
 
+# Full local gate set (lint + format check + tests + webapp typecheck)
+certify:
+    uv run ruff check src/ run_server.py
+    uv run ruff format --check src/ run_server.py
+    uv run pytest tests/ -q
+    powershell.exe -NoProfile -Command "Set-Location '{{justfile_directory()}}\\web_sota'; bun run typecheck"
+
 # Build the PyInstaller backend .exe and copy to Tauri resources
 build-sidecar:
     powershell.exe -NoProfile -File '{{justfile_directory()}}\native\build.ps1'
