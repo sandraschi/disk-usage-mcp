@@ -21,12 +21,26 @@ dev = [
 inspect = ["pymupdf"]
 
 [dependency-groups]
-dev = ["ruff>=0.16.0,<0.17", "pyinstaller>=6.0.0", "pytest>=8.0.0", "pytest-asyncio>=0.24.0"]
+dev = [
+    "ruff>=0.16.0,<0.17",
+    "pyinstaller>=6.0.0",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "pyright>=1.1.414",
+    "pytest-cov>=7.1.0",
+]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 pythonpath = ["src"]
+
+[tool.coverage.run]
+source = ["src"]
+
+[tool.coverage.report]
+fail_under = 40
+show_missing = true
 
 [project.scripts]
 disk-usage-mcp = "disk_usage_mcp.server:main"

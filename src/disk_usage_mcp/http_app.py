@@ -638,9 +638,9 @@ async def llm_chat_stream(body: LlmChatRequest):
                 async with httpx.AsyncClient(timeout=300.0) as client:
                     model = body.model or (await _lmstudio_models() or [""])[0]
                     async with client.stream(
+                        "POST",
                         f"{LMSTUDIO_BASE}/v1/chat/completions",
                         json={"model": model, "messages": messages, "stream": True},
-                        method="POST",
                     ) as resp:
                         resp.raise_for_status()
                         async for line in resp.aiter_lines():
@@ -661,9 +661,9 @@ async def llm_chat_stream(body: LlmChatRequest):
                         models = await _ollama_models()
                         model = models[0] if models else ""
                     async with client.stream(
+                        "POST",
                         f"{OLLAMA_BASE}/api/chat",
                         json={"model": model, "messages": messages, "stream": True},
-                        method="POST",
                     ) as resp:
                         resp.raise_for_status()
                         async for line in resp.aiter_lines():

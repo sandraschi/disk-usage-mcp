@@ -9,7 +9,7 @@ from disk_usage_mcp.runner import run_czkawka_dups
 async def find_duplicates(
     search_paths: Annotated[list[str], Field(description="Directories or drive roots to scan for duplicates")],
     min_size_mb: Annotated[int, Field(description="Minimum file size in MB to consider", ge=1)] = 100,
-    ctx: Context = None,
+    ctx: Context | None = None,
 ) -> dict:
     """Detect duplicate files across directories using czkawka_cli.
 

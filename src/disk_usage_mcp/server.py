@@ -52,7 +52,9 @@ async def server_help(
     from disk_usage_mcp.http_app import TOOL_DEFS
     from disk_usage_mcp.http_app import app as fastapi_app
 
-    routes = sorted({r.path for r in fastapi_app.routes if hasattr(r, "path") and r.path.startswith("/api")})
+    routes = sorted(
+        {getattr(r, "path", "") for r in fastapi_app.routes if getattr(r, "path", "").startswith("/api")}
+    )
     tools = TOOL_DEFS
     if topic == "snapshots":
         routes = [r for r in routes if "snapshot" in r]
@@ -165,12 +167,12 @@ async def show_drives_card(ctx: Context) -> ToolResult:
         drive, _, rest = line.partition(":")
         rows.append((drive.strip() + ":", rest.strip()))
 
-    with Column(gap=4, cssClass="p-4") as view:
+    with Column(gap=4, css_class="p-4") as view:
         Heading("Disk Usage - Drives")
         Separator()
         with Grid(columns=3, gap=3):
             for drive, rest in rows:
-                with Card(), CardContent(cssClass="pt-4"):
+                with Card(), CardContent(css_class="pt-4"):
                     Muted(drive)
                     Heading(rest)
 
@@ -205,13 +207,13 @@ async def show_duplicates_card(
     result = await find_duplicates(search_paths=search_paths, min_size_mb=min_size_mb, ctx=ctx)
     groups = result.get("duplicates", []) if result.get("success") else []
 
-    with Column(gap=4, cssClass="p-4") as view:
+    with Column(gap=4, css_class="p-4") as view:
         Heading(f"Duplicates - {len(groups)} groups")
         Separator()
         with Grid(columns=2, gap=3):
             for group in groups[:12]:
                 files = group.get("files", [])
-                with Card(), CardContent(cssClass="pt-4"):
+                with Card(), CardContent(css_class="pt-4"):
                     Muted(f"{group.get('size_mb', 0)} MB x {len(files)}")
                     Heading(str(files[0]) if files else "(no path)")
 
