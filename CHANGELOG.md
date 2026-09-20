@@ -1,5 +1,18 @@
 # Changelog — disk-usage-mcp
 
+## 2026-09-21 — assfix round 2 (fix-all)
+
+- Backend: prompts (reclaim-plan, snapshot-compare), skill:// resource, Prefab cards
+  (show_drives_card, show_duplicates_card), output_schema on all tools
+- REST: logs ring, skill content, snapshot diff + delete, setup status, fleet apps,
+  local LLM proxy (discover/providers/models/chat/SSE stream)
+- Webapp: Inbox, Tools, Skills, Chat, Logs, Apps, Help pages; Settings LLM cards;
+  Dashboard hero + onboarding cue + MOCK badges; Tauri listen + backoff poll;
+  logger/help modals; Ctrl+K/L/H shortcuts; zoom hook; font contrast pass
+- Quality: pyright clean, coverage floor 40, Biome gate, Playwright e2e (4 green),
+  pre-commit, renovate, .agents skills, MCPB 3-4-100 prompts, pack+validate green
+- Docs: docs/ suite (CONFIGURATION/DEVELOPMENT/TOOLS/TROUBLESHOOTING/ONBOARDING)
+
 ## 2026-09-21 — assfix pass
 
 - REST: added `/health` alias (fleet launcher probe), `/api/status`, `/api/capabilities`, `/api/skills`, `POST /api/shutdown`, `/api/duplicates`, `/api/large-files` (frontend-called routes that were missing)

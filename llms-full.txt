@@ -17,13 +17,22 @@ FastMCP server wrapping dua-cli and czkawka_cli for disk usage analysis and dupl
 ```
 dua-cli ──→ disk-usage-mcp ──→ FastAPI REST ──→ React/Vite frontend (web_sota/)
 czkawka_cli ──→   (MCP protocol)    ├── /health + /api/health + /api/status
-VDJ/Serato DB ──→                   ├── /api/capabilities, /api/skills
+VDJ/Serato DB ──→                   ├── /api/capabilities, /api/skills[/{name}], /api/logs
+                                    ├── /api/setup/status, /api/fleet/apps
                                     ├── /api/scan, /api/duplicates, /api/large-files
-                                    ├── /api/snapshot/take, /api/snapshots, /api/snapshot/{file}
-                                    ├── POST /api/shutdown
-                                    ├── /api/v1/diagnostics
+                                    ├── /api/snapshot/take, /api/snapshots, /api/snapshot/diff|{file} (GET+DELETE)
+                                    ├── /api/llm/discover|providers|models|chat|chat/stream (local only)
+                                    ├── POST /api/shutdown, /api/v1/diagnostics, /docs
                                     └── /mcp (MCP streamable HTTP, mounted with path="/")
 ```
+
+## Dashboard pages
+
+Dashboard (hero+KPIs+onboarding), Drives (treemap), Duplicates, Inbox (snapshots),
+Tools (capability runner), Skills, Chat (local LLM, streaming), Logs, Apps (fleet hub),
+Settings (LLM providers), Help (onboarding+endpoints). Shortcuts: Ctrl+K/L/H, Ctrl+Scroll
+zoom, Ctrl+0 reset. Zoom persists under `tauri-zoom`; chat history (100 cap) and LLM
+selection persist in localStorage.
 
 ## MCP Tools
 
@@ -80,6 +89,24 @@ server_help()
 server_help(topic="snapshots")
 → {"success": true, "message": "...", "tools": [...], "endpoints": [...]}
 ```
+
+### show_drives_card / show_duplicates_card (Prefab, app=True)
+
+```
+show_drives_card()
+show_duplicates_card(search_paths=["D:\\", "E:\\"], min_size_mb=100)
+→ ToolResult with text + PrefabApp card
+```
+
+## Prompts
+
+- `reclaim-plan(drives, min_size_gb)` — four-step reclamation plan.
+- `snapshot-compare(older, newer)` — growth-analysis plan.
+
+## Resources
+
+- `drive://list` — drive letters with usage stats (no scanner needed).
+- `skill://disk-usage` — bundled skill text.
 
 ## Resources
 

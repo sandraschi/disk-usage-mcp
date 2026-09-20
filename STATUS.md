@@ -1,8 +1,8 @@
 # Disk Usage MCP — Status
 
-**Last updated:** 2026-07-22  
-**Version:** 0.1.0  
-**SOTA:** FastMCP 3.4.4, React 19, Vite 6, Tailwind v4
+**Last updated:** 2026-09-21
+**Version:** 0.1.0
+**SOTA:** FastMCP 3.4.4, React 19, Vite 6, Tailwind v4, pyright clean
 
 ---
 
@@ -10,47 +10,38 @@
 
 | Area | What | Status |
 |------|------|--------|
-| **MCP Server** | 5 tools: scan_path, find_large_files, get_drive_overview, find_duplicates, disk_usage (portmanteau) | Done |
-| **Async runner** | Subprocess wrappers for dua-cli + czkawka_cli, timeout handling, error recovery | Done |
-| **FastAPI REST** | /health, /api/v1/diagnostics, /api/scan, /api/duplicates, /api/large-files, snapshot CRUD | Done |
-| **MCP streamable HTTP** | /mcp mounted on FastAPI app | Done |
-| **CORS** | Tauri, Tailscale, LAN regex | Done |
-| **Web dashboard** | React 19 + Vite 6 + Tailwind v4 + Zustand + Framer Motion + recharts. Pages: Dashboard, Drives (treemap), Duplicates, Settings | Done |
-| **Session injection** | .claude-plugin + hooks/hooks.json with tool-awareness prompt | Done |
-| **Skills** | disk-usage SKILL.md | Done |
-| **Testing** | 10 pytest tests (HTTP smoke, config, imports) | Done |
-| **Lint** | ruff check + format clean | Done |
-| **Git** | Initialized, committed, push-ready | Done |
-| **Packaging** | .mcpbignore, pyproject.toml, run_server.py, glama.json, llms.txt, llms-full.txt | Done |
-| **Docs** | README.md, llms.txt, llms-full.txt, glama.json | Done |
-| **Startup** | start.ps1 (zombie clear + poll + auto-open), start.bat | Done |
+| **MCP Server** | 9 tools: scan_path, find_large_files, get_drive_overview, find_duplicates, disk_usage, parse_dj_database, server_help, show_drives_card, show_duplicates_card | Done |
+| **Prompts/Resources** | reclaim-plan, snapshot-compare; drive://list, skill://disk-usage | Done |
+| **Async runner** | dua + czkawka wrappers, timeouts, logger.exception paths | Done |
+| **FastAPI REST** | health/status/capabilities/skills/logs/setup/fleet; scan/duplicates/large-files; snapshot take/list/get/diff/delete; LLM discover/providers/models/chat/stream; diagnostics; shutdown; /docs | Done |
+| **MCP streamable HTTP** | /mcp mounted with path="/" + merged lifespan (live-verified) | Done |
+| **Local LLM** | Ollama + LM Studio proxy, no keys, SSE streaming, GPU note | Done |
+| **Web dashboard** | 11 pages: Dashboard, Drives, Duplicates, Inbox, Tools, Skills, Chat, Logs, Apps, Settings, Help — shortcuts, zoom, modals, dark theme, a11y pass | Done |
+| **Session injection** | .claude-plugin + hooks, .cursorrules, .windsurfrules, copilot, opencode + antigravity skills | Done |
+| **Skills** | disk-usage SKILL.md served via resource + REST + page | Done |
+| **Testing** | 28 pytest (cov floor 40), tsc, Biome, Playwright e2e 4/4 | Done |
+| **Lint** | ruff (T20) + format + pyright clean | Done |
+| **Git** | Committed, pushed (CI file local-only: needs workflow scope) | Done |
+| **Packaging** | 3-4-100 prompts, wipe+recopy pack recipe, pack + validate green | Done |
+| **Docs** | README + docs/ suite + llms + CHANGELOG + ONBOARDING | Done |
+| **Startup** | Fleet launcher, zombie clear, /health probe, Tauri listen + poll | Done |
 | **Ports** | 11114/11115 registered in WEBAPP_PORTS.md | Done |
+| **Onboarding** | docs/ONBOARDING.md, under-hero cue, MOCK-until-ready, setup/status | Done |
 
 ## In Progress / Not Started
 
 | Area | What | Status |
 |------|------|--------|
-| **Model duplicate detection** | Cross-directory dedup (GGUF, .safetensors, .bin) across Ollama/Pinokio/HF download dirs | Not started |
-| **Backup duplicate detection** | Find redundant archive copies across multiple spinners | Not started |
-| **Media library scan** | Media-type breakdown — video/audio/image archive sizes | Not started |
-| **CLI binary auto-install** | Winget/cargo install dua + czkawka in start.ps1 if missing | Not started |
-| **Scheduled snapshots** | Cron/Windows Task Scheduler for periodic drive snapshots | Not started |
-| **Diff view** | Compare two snapshots to show delta (growth/shrinkage) | Not started |
-| **Prefab UI cards** | @mcp.tool(app=True) for in-chat drive cards | Not started |
-| **Tauri NSIS build** | Native desktop installer (stretch goal) | Not started |
-| **Playwright E2E** | Frontend browser tests | Not started |
-| **CUA smoke test** | NSIS install → launch → verify flow | Not started |
-| **GitHub remote** | `gh repo create` + push | Not started |
+| **Model duplicate detection** | Cross-directory GGUF/safetensors dedup across Ollama/Pinokio/HF dirs | Not started |
+| **Scheduled snapshots** | Task Scheduler recipe exists in prompts; no installer yet | Not started |
+| **Prefab cards in chat clients** | Server side done; client rendering depends on host | Done (server) |
+| **CI on GitHub** | Workflow file ready locally; needs push with workflow scope | Blocked (scope) |
+| **MCPB smoke launch** | Pack + validate green; clean-env launch still manual | Not started |
 
 ## Known Issues
 
 | Issue | Workaround |
 |-------|------------|
-| dua/czkawka not on PATH | Install manually: `winget install dua-cli` / `cargo install dua-cli` |
-| Web dashboard shows "Offline" | Backend not running — run `.\start.ps1` or `just mcp-http` |
-
-## Next Up
-
-1. Model duplicate detection — scan Ollama dirs + Pinokio downloads + HF cache for overlapping GGUF/safetensor files
-2. Scheduled snapshot via Windows Task Scheduler
-3. Snapshot diff view in dashboard
+| dua/czkawka not on PATH | `winget install` both; setup/status names the missing one |
+| Web dashboard shows "Offline" | Run `.\start.ps1`; topbar backoff retries automatically |
+| Chat says no LLM | Start Ollama (`ollama serve`) or load an LM Studio model |
