@@ -1,13 +1,24 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { HardDrive, Copy, Scan, Database } from "lucide-react";
-import { getHealth, type HealthResponse, listSnapshots, type SnapshotInfo } from "../lib/api";
+import { Copy, Database, HardDrive, Scan } from "lucide-react";
+import { getSetupStatus, getStatus, listSnapshots, type SnapshotInfo, type StatusResponse } from "../lib/api";
+import { OnboardingCue } from "../components/OnboardingCue";
 
-function KpiCard({ icon: Icon, label, value, testid }: {
+function MockBadge() {
+  return (
+    <span className="ml-1 px-1.5 py-0.5 bg-yellow-600/30 text-yellow-300 rounded text-sm font-normal" data-testid="mock-badge">
+      MOCK
+    </span>
+  );
+}
+
+function KpiCard({ icon: Icon, label, value, testid, mock }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: string;
   testid: string;
+  mock?: boolean;
 }) {
   return (
     <motion.div
@@ -21,7 +32,7 @@ function KpiCard({ icon: Icon, label, value, testid }: {
           <Icon className="h-5 w-5" />
         </div>
         <div>
-          <p className="text-sm text-zinc-400">{label}</p>
+          <p className="text-sm text-zinc-300">{label}{mock && <MockBadge />}</p>
           <p className="text-xl font-semibold text-zinc-100">{value}</p>
         </div>
       </div>
@@ -30,42 +41,51 @@ function KpiCard({ icon: Icon, label, value, testid }: {
 }
 
 export default function Dashboard() {
-  const [health, setHealth] = useState<HealthResponse | null>(null);
+  const [status, setStatus] = useState<StatusResponse | null>(null);
   const [snapshots, setSnapshots] = useState<SnapshotInfo[]>([]);
+  const [ready, setReady] = useState<boolean | null>(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    getHealth().then(setHealth).catch(() => {});
+    getStatus().then(setStatus).catch((e: unknown) => setError(e instanceof Error ? e.message : "Backend offline"));
     listSnapshots().then((r) => setSnapshots(r.snapshots)).catch(() => {});
+    getSetupStatus().then((s) => setReady(s.ready)).catch(() => setReady(null));
   }, []);
 
   const lastSnapshot = snapshots.length > 0 ? snapshots[0] : null;
+  const showMock = ready === false;
 
   return (
     <div data-testid="dashboard" className="space-y-6">
-      <h2 className="text-2xl font-bold text-zinc-100">Dashboard</h2>
+      <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 space-y-2" data-testid="dashboard-hero">
+        <h2 className="text-2xl font-bold text-zinc-100">Disk Usage — reclaim space across every drive</h2>
+        <p className="text-sm text-zinc-300">
+          {status ? `Backend ${status.status} · v${status.version} · ${status.tool_count} tools` : "Probing backend..."}
+          {error && <span className="text-red-400"> — {error}</span>}
+        </p>
+        <p className="text-sm text-zinc-300">
+          Quick start: <Link to="/drives" className="text-amber-400 hover:underline">scan a drive</Link> →{" "}
+          <Link to="/duplicates" className="text-amber-400 hover:underline">hunt duplicates</Link> →{" "}
+          <Link to="/inbox" className="text-amber-400 hover:underline">snapshot it</Link>. Chat answers run on your local LLM.
+        </p>
+      </section>
+
+      <OnboardingCue />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard icon={HardDrive} label="Status" value={health?.status ?? "..."} testid="kpi-server" />
-        <KpiCard icon={Scan} label="Tools" value={String(health?.tool_count ?? "-")} testid="kpi-tools" />
-        <KpiCard icon={Database} label="Snapshots" value={String(snapshots.length)} testid="kpi-provider" />
-        <KpiCard icon={Copy} label="Version" value={health?.version ?? "-"} testid="kpi-version" />
+        <KpiCard icon={HardDrive} label="Status" value={status?.status ?? (showMock ? "ok" : "...")} testid="kpi-server" mock={showMock && !status} />
+        <KpiCard icon={Scan} label="Tools" value={status ? String(status.tool_count) : showMock ? "9" : "-"} testid="kpi-tools" mock={showMock && !status} />
+        <KpiCard icon={Database} label="Snapshots" value={String(snapshots.length)} testid="kpi-snapshots" />
+        <KpiCard icon={Copy} label="Version" value={status?.version ?? (showMock ? "0.1.0" : "-")} testid="kpi-version" mock={showMock && !status} />
       </div>
 
       {lastSnapshot && (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-          <h3 className="text-sm font-medium text-zinc-400 mb-2">Latest Snapshot</h3>
-          <p className="text-zinc-200">{lastSnapshot.label || lastSnapshot.file}</p>
-          <p className="text-xs text-zinc-500">{lastSnapshot.timestamp}</p>
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4" data-testid="latest-snapshot">
+          <h3 className="text-sm font-medium text-zinc-300 mb-2">Latest snapshot</h3>
+          <p className="text-zinc-100">{lastSnapshot.label || lastSnapshot.file}</p>
+          <p className="text-sm text-zinc-400">{lastSnapshot.timestamp}</p>
         </div>
       )}
-
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-zinc-100 mb-2">Quick Start</h3>
-        <p className="text-zinc-400 text-sm">
-          Use the <strong>Drives</strong> page to scan your drives, the <strong>Duplicates</strong>
-          page to find redundant files, and take snapshots to track usage over time.
-        </p>
-      </div>
     </div>
   );
 }
