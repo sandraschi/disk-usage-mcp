@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
 import { BookOpen, RefreshCw } from "lucide-react";
+import { useEffect, useState } from "react";
 import { getSkillContent, listSkills, type SkillRef } from "../lib/api";
 
 export default function Skills() {
@@ -43,7 +43,9 @@ export default function Skills() {
         </div>
       )}
       {!loading && !error && skills.length === 0 && (
-        <p className="text-center py-12 text-zinc-400" data-testid="skills-empty">No skills registered.</p>
+        <p className="text-center py-12 text-zinc-400" data-testid="skills-empty">
+          No skills registered.
+        </p>
       )}
 
       {skills.length > 0 && (
@@ -63,7 +65,10 @@ export default function Skills() {
               </li>
             ))}
           </ul>
-          <pre className="md:col-span-3 bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm text-zinc-200 overflow-auto max-h-[60vh] whitespace-pre-wrap" data-testid="skills-content">
+          <pre
+            className="md:col-span-3 bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm text-zinc-200 overflow-auto max-h-[60vh] whitespace-pre-wrap"
+            data-testid="skills-content"
+          >
             {content || "Loading..."}
           </pre>
         </div>

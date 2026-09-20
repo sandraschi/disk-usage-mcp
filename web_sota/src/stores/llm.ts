@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { llmProviders, type LlmProvider } from "../lib/api";
+import { type LlmProvider, llmProviders } from "../lib/api";
 
 const PROVIDER_KEY = "llm_provider";
 const MODEL_KEY = "llm_model";

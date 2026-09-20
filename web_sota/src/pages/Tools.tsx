@@ -1,12 +1,6 @@
-import { useEffect, useState } from "react";
 import { Play, RefreshCw, Wrench } from "lucide-react";
-import {
-  findDuplicates,
-  findLargeFiles,
-  getCapabilities,
-  scanPath,
-  type CapabilitiesResponse,
-} from "../lib/api";
+import { useEffect, useState } from "react";
+import { type CapabilitiesResponse, findDuplicates, findLargeFiles, getCapabilities, scanPath } from "../lib/api";
 
 export default function Tools() {
   const [caps, setCaps] = useState<CapabilitiesResponse | null>(null);
@@ -45,7 +39,10 @@ export default function Tools() {
     <div data-testid="tools-page" className="space-y-6">
       <h2 className="text-2xl font-bold text-zinc-100">Tools</h2>
 
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex gap-2 items-center" data-testid="tools-runner">
+      <div
+        className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex gap-2 items-center"
+        data-testid="tools-runner"
+      >
         <Wrench className="h-4 w-4 text-amber-500 flex-shrink-0" />
         <input
           value={path}
@@ -86,13 +83,18 @@ export default function Tools() {
       )}
 
       {result && (
-        <pre className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm text-zinc-200 overflow-auto max-h-96" data-testid="tools-result">
+        <pre
+          className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm text-zinc-200 overflow-auto max-h-96"
+          data-testid="tools-result"
+        >
           {result}
         </pre>
       )}
 
       {!loading && !error && !caps && (
-        <p className="text-center py-12 text-zinc-400" data-testid="tools-empty">No tools reported by the backend.</p>
+        <p className="text-center py-12 text-zinc-400" data-testid="tools-empty">
+          No tools reported by the backend.
+        </p>
       )}
     </div>
   );
