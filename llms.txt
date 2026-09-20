@@ -4,13 +4,16 @@ FastMCP server for disk usage analysis, duplicate detection, and multi-drive vis
 
 ## Quick links
 
-- [llms-full.txt](./llms-full.txt) — Full documentation
-- [README.md](./README.md) — Setup and usage
+- [llms-full.txt](./llms-full.txt) - Full documentation
+- [README.md](./README.md) - Setup and usage
 - [Source](https://github.com/sandraschi/disk-usage-mcp)
 
 ## Tools
 
-- **scan_path_tool** — Scan a drive with dua-cli, return JSON hierarchy
-- **find_large_files_tool** — Find files above size threshold
-- **get_drive_overview_tool** — Aggregate across multiple drives
-- **find_duplicates_tool** — Find duplicates with czkawka_cli
+- **scan_path** - Scan a drive with dua-cli, return JSON hierarchy
+- **find_large_files** - Find files above size threshold
+- **get_drive_overview** - Aggregate across multiple drives
+- **find_duplicates** - Find duplicates with czkawka_cli
+- **disk_usage** - Portmanteau: scan / tree / drive_overview
+- **parse_dj_database** - Parse VirtualDJ / Serato DJ library database
+- **server_help** - List tools and REST endpoints

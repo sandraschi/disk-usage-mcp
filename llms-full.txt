@@ -2,7 +2,7 @@
 
 ## Overview
 
-FastMCP server wrapping dua-cli and czkawka_cli for disk usage analysis and duplicate detection. Designed for multi-TB media libraries spread across multiple drives.
+FastMCP server wrapping dua-cli and czkawka_cli for disk usage analysis and duplicate detection. Designed for multi-TB media libraries spread across multiple drives. Also parses VirtualDJ / Serato DJ library databases.
 
 ## Dependencies
 
@@ -15,46 +15,82 @@ FastMCP server wrapping dua-cli and czkawka_cli for disk usage analysis and dupl
 ## Architecture
 
 ```
-dua-cli ──→ disk-usage-mcp ──→ FastAPI REST ──→ React/Vite frontend
-czkawka_cli ──→   (MCP protocol)    ├── /api/health
-                                       ├── /api/scan
-                                       ├── /api/snapshot/take
-                                       ├── /api/snapshots
-                                       └── /api/v1/diagnostics
+dua-cli ──→ disk-usage-mcp ──→ FastAPI REST ──→ React/Vite frontend (web_sota/)
+czkawka_cli ──→   (MCP protocol)    ├── /health + /api/health + /api/status
+VDJ/Serato DB ──→                   ├── /api/capabilities, /api/skills
+                                    ├── /api/scan, /api/duplicates, /api/large-files
+                                    ├── /api/snapshot/take, /api/snapshots, /api/snapshot/{file}
+                                    ├── POST /api/shutdown
+                                    ├── /api/v1/diagnostics
+                                    └── /mcp (MCP streamable HTTP, mounted with path="/")
 ```
 
 ## MCP Tools
 
-### scan_path_tool
+All tools return `{"success": bool, "message": str, ...}` plus payload keys.
+
+### scan_path
+
 ```
-scan_path_tool(path="D:\\Media", max_depth=3)
-→ {"success": true, "data": {"name": "D:", "size": ..., "children": [...]}}
+scan_path(path="D:\\", max_depth=2)
+→ {"success": true, "message": "...", "data": {"name": "D:", "size": ..., "children": [...]}}
 ```
 
-### find_large_files_tool
+### find_large_files
+
 ```
-find_large_files_tool(path="D:\\", min_size_gb=5.0)
-→ {"success": true, "files": [{"path": "...", "size_gb": 5.2}]}
+find_large_files(path="D:\\", min_size_gb=5.0, limit=50)
+→ {"success": true, "message": "...", "files": [{"path": "...", "size_gb": 5.2}]}
 ```
 
-### get_drive_overview_tool
+### get_drive_overview
+
 ```
-get_drive_overview_tool(paths=["C:\\", "D:\\", "E:\\", "F:\\"])
-→ {"success": true, "drives": [...], "total_bytes": ...}
+get_drive_overview(paths=["C:\\", "D:\\", "E:\\", "F:\\"])
+→ {"success": true, "message": "...", "drives": [...], "total_bytes": ...}
 ```
 
-### find_duplicates_tool
+### find_duplicates
+
 ```
-find_duplicates_tool(search_paths=["D:\\", "E:\\"], min_size_mb=100)
-→ {"success": true, "duplicates": [{"hash": "...", "size_mb": 500, "files": [...]}]}
+find_duplicates(search_paths=["D:\\", "E:\\"], min_size_mb=100)
+→ {"success": true, "message": "...", "duplicates": [{"hash": "...", "size_mb": 500, "files": [...]}]}
 ```
+
+### disk_usage (portmanteau)
+
+```
+disk_usage(operation="scan", path="D:\\", max_depth=2)
+disk_usage(operation="tree", path="D:\\Media", max_depth=2)
+disk_usage(operation="drive_overview", paths=["C:\\", "D:\\"])
+```
+
+### parse_dj_database
+
+```
+parse_dj_database()
+parse_dj_database(path="C:\\Users\\...\\AppData\\Roaming\\VirtualDJ\\Database.xml")
+→ {"success": true, "message": "...", "source": "virtualdj"|"serato", "total_tracks": N, "tracks": [...]}
+```
+
+### server_help
+
+```
+server_help()
+server_help(topic="snapshots")
+→ {"success": true, "message": "...", "tools": [...], "endpoints": [...]}
+```
+
+## Resources
+
+- `drive://list` — available drive letters with usage stats.
 
 ## Best Practices
 
-1. Start with `get_drive_overview_tool` to see drive-level allocation
-2. Drill into specific drives with `scan_path_tool` at depth 2-3
-3. Use `find_large_files_tool` with min_size_gb=10+ for quick space recovery
-4. Run `find_duplicates_tool` across backup drives last (slowest operation)
+1. Start with `get_drive_overview` to see drive-level allocation
+2. Drill into specific drives with `scan_path` at depth 2-3
+3. Use `find_large_files` with min_size_gb=10+ for quick space recovery
+4. Run `find_duplicates` across backup drives last (slowest operation)
 
 ## Environment
 
@@ -62,7 +98,8 @@ find_duplicates_tool(search_paths=["D:\\", "E:\\"], min_size_mb=100)
 |----------|---------|-------------|
 | BACKEND_PORT | 11114 | REST API port |
 | FRONTEND_PORT | 11115 | Vite dev port |
-| MCP_PORT | 11114 | MCP HTTP port |
+| MCP_PORT | 11114 | MCP HTTP port (dual transport: set → HTTP, unset → stdio) |
+| MCP_HOST | 127.0.0.1 | HTTP bind host |
 | DUA_BIN | dua | Path to dua binary |
 | CZKAWKA_BIN | czkawka_cli | Path to czkawka binary |
 
