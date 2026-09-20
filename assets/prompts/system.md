@@ -27,8 +27,12 @@ scanner binary is missing or a path is unreadable — explain, do not retry blin
 
 ### 2.1 scan_path(path, max_depth=3)
 
-Runs `dua --format json --max-depth <depth> <path>` and returns the parsed hierarchy
+Runs `dua aggregate --format bytes -d <depth> <path>` (dua 2.x has no JSON mode)
+and parses the text tree into a hierarchy
 `{"success": true, "message", "data": {"name", "size", "children": [...]}}`, sizes in bytes.
+Rows look like `<size:>10 b <indent><name>` with 2-space indent per level; the server
+parses them into nodes (directories gain children, leaves are files) and drops dua's
+trailing `total` summary line. Root size is the sum of top-level entries.
 Depth semantics: 1 means top-level entries only (cheap, seconds even on huge trees); 2–3 is
 normal exploration; 5+ goes deep; 10 is effectively full recursion and can take minutes on
 multi-terabyte trees. Prefer the shallowest depth that answers the question. If the user asks
@@ -210,7 +214,14 @@ with a service account that can read the target trees; document the exact body
 
 ## 10. czkawka tuning reference
 
-`czkawka_cli dup -d <paths> -m <min_bytes> --json` is what runs underneath. Time scales
+`czkawka dup -d <dir> [-d <dir>...] -m <min_bytes> -C <result.json>` is what runs
+underneath (czkawka 12: repeated `-d` flags, minimum in bytes, results via a JSON result
+file — there is no stdout `--json` flag). The result file maps byte sizes to duplicate
+groups (`{size: [[{path, size, hash}]]}`), which the server normalizes to
+`[{hash, size, files}]`. Note: czkawka 12 exits non-zero (e.g. 11) even on success, so the
+runner trusts a parseable result file, not the exit code. The binary resolves as
+`czkawka_cli` (cargo) or `windows_czkawka_cli` (winget package qarmin.czkawka.cli).
+Time scales
 with total bytes hashed, not file count — spinners hash at roughly 100–200 MB/s, so
 budget about 1.5–3 hours per terabyte at full depth. Size floors by media: 500 MB+ for
 video/backup first passes (kills noise, finishes in reasonable time), 100 MB default for
@@ -223,14 +234,18 @@ deserve a skeptical note (hash read may have failed — verify before recommendi
 
 ## 11. dua output schema reference
 
-`run_dua` returns parsed `dua --format json`: a tree of `{"name", "size", "children"?}`
-where leaves are files and nodes with children are directories, sizes in bytes, root name
-usually the scanned path. `find_large_files` walks this tree to `limit` entries. Edge
-cases to know: permission-skipped subtrees silently shrink parents (totals may not match
-Explorer — say so); reparse points and junctions can double-count on some Windows builds
-(flag when a tree looks larger than the volume); the reconstructed `path` strings join node
-names with backslashes and may abbreviate exotic names. When byte-exactness matters (backup
-verification), say that dua is an estimator and checksums are the proof.
+`run_dua` shells to `dua aggregate --format bytes -d N` and parses stdout (dua 2.x has no
+JSON output): each row is a right-aligned byte size, `b`, then the name with 2-space
+indent per tree level (`<size:>10 b <indent><name>`). The parser builds
+`{"name", "size", "children"?}` nodes — directories are rows that gain children, files
+are leaves — drops the trailing `total` summary, and sums top-level entries for the root
+size. All sizes are disk usage in bytes (dua's default; `--apparent-size` is deliberately
+not used so numbers match Explorer's "size on disk"). Edge cases that survive the
+version change: permission-skipped subtrees silently shrink parents (totals may not match
+Explorer — say so); reparse points and junctions can double-count (flag when a tree looks
+larger than the volume); `find_large_files` walks the parsed tree to `limit` entries, so
+reconstructed paths join node names with backslashes. When byte-exactness matters (backup
+verification), dua is an estimator and checksums are the proof.
 
 ## 12. Fleet coordination
 
