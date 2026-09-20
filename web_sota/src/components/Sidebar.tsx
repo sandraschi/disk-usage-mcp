@@ -1,5 +1,7 @@
-import { NavLink } from "react-router-dom";import {
+import {
   BookOpen,
+  ChevronLeft,
+  ChevronRight,
   CircleHelp,
   Copy,
   HardDrive,
@@ -7,13 +9,12 @@ import { NavLink } from "react-router-dom";import {
   LayoutDashboard,
   LayoutGrid,
   MessageSquare,
+  Monitor,
   ScrollText,
   Settings,
   Wrench,
-  ChevronLeft,
-  ChevronRight,
-  Monitor,
 } from "lucide-react";
+import { NavLink } from "react-router-dom";
 
 const navItems = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -59,9 +60,7 @@ export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle:
             to={item.to}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                isActive
-                  ? "bg-amber-500/10 text-amber-400"
-                  : "text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800"
+                isActive ? "bg-amber-500/10 text-amber-400" : "text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800"
               }`
             }
           >

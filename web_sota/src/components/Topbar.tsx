@@ -1,6 +1,6 @@
+import { CircleHelp, FileText, Search } from "lucide-react";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { CircleHelp, FileText, Search } from "lucide-react";
 import { useConnectionStore } from "../stores/connection";
 
 const BACKOFFS = [1000, 2000, 4000, 8000, 16000];
@@ -17,7 +17,15 @@ async function attachTauriListener(onReady: () => void): Promise<(() => void) | 
   }
 }
 
-export function Topbar({ zoomPct, onOpenLogger, onOpenHelp }: { zoomPct: number; onOpenLogger: () => void; onOpenHelp: () => void }) {
+export function Topbar({
+  zoomPct,
+  onOpenLogger,
+  onOpenHelp,
+}: {
+  zoomPct: number;
+  onOpenLogger: () => void;
+  onOpenHelp: () => void;
+}) {
   const { backendOk, check } = useConnectionStore();
   const navigate = useNavigate();
 
@@ -31,7 +39,7 @@ export function Topbar({ zoomPct, onOpenLogger, onOpenHelp }: { zoomPct: number;
       const before = useConnectionStore.getState().backendOk;
       await check();
       const after = useConnectionStore.getState().backendOk;
-      failures = after ? 0 : (before === false ? failures + 1 : 1);
+      failures = after ? 0 : before === false ? failures + 1 : 1;
       const delay = after ? 10000 : BACKOFFS[Math.min(failures, BACKOFFS.length - 1)];
       timer = setTimeout(poll, delay);
     };
@@ -50,17 +58,9 @@ export function Topbar({ zoomPct, onOpenLogger, onOpenHelp }: { zoomPct: number;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const statusDot = backendOk === null
-    ? "bg-gray-500"
-    : backendOk
-      ? "bg-green-500"
-      : "bg-red-500";
+  const statusDot = backendOk === null ? "bg-gray-500" : backendOk ? "bg-green-500" : "bg-red-500";
 
-  const statusText = backendOk === null
-    ? "Connecting..."
-    : backendOk
-      ? "Connected"
-      : "Offline";
+  const statusText = backendOk === null ? "Connecting..." : backendOk ? "Connected" : "Offline";
 
   return (
     <header className="flex items-center gap-3 px-6 py-3 border-b border-zinc-800 bg-zinc-900">
@@ -73,7 +73,19 @@ export function Topbar({ zoomPct, onOpenLogger, onOpenHelp }: { zoomPct: number;
           onKeyDown={(e) => {
             const q = (e.target as HTMLInputElement).value.toLowerCase();
             if (e.key === "Enter" && q) {
-              const routes = ["dashboard", "drives", "duplicates", "inbox", "tools", "skills", "chat", "logs", "apps", "settings", "help"];
+              const routes = [
+                "dashboard",
+                "drives",
+                "duplicates",
+                "inbox",
+                "tools",
+                "skills",
+                "chat",
+                "logs",
+                "apps",
+                "settings",
+                "help",
+              ];
               const hit = routes.find((r) => r.includes(q));
               if (hit) navigate(`/${hit}`);
             }
@@ -82,11 +94,23 @@ export function Topbar({ zoomPct, onOpenLogger, onOpenHelp }: { zoomPct: number;
         />
       </div>
       <div className="flex-1" />
-      <span className="text-sm text-zinc-400" title="UI zoom (Ctrl+Scroll, Ctrl+0 resets)">{zoomPct}%</span>
-      <button onClick={onOpenLogger} className="p-1.5 rounded hover:bg-zinc-800 text-zinc-300" title="Server logs (Ctrl+L)" aria-label="Open logs">
+      <span className="text-sm text-zinc-400" title="UI zoom (Ctrl+Scroll, Ctrl+0 resets)">
+        {zoomPct}%
+      </span>
+      <button
+        onClick={onOpenLogger}
+        className="p-1.5 rounded hover:bg-zinc-800 text-zinc-300"
+        title="Server logs (Ctrl+L)"
+        aria-label="Open logs"
+      >
         <FileText className="h-4 w-4" />
       </button>
-      <button onClick={onOpenHelp} className="p-1.5 rounded hover:bg-zinc-800 text-zinc-300" title="Help (Ctrl+H)" aria-label="Open help">
+      <button
+        onClick={onOpenHelp}
+        className="p-1.5 rounded hover:bg-zinc-800 text-zinc-300"
+        title="Help (Ctrl+H)"
+        aria-label="Open help"
+      >
         <CircleHelp className="h-4 w-4" />
       </button>
       <div className="flex items-center gap-2 text-sm text-zinc-300" data-testid="backend-dot">

@@ -1,6 +1,6 @@
-import React, { useState, useMemo, useRef, useEffect } from "react";
 import * as d3 from "d3";
-import { ChevronRight, Home, ArrowUp, Maximize2, Minimize2, Download, Folder, FileText } from "lucide-react";
+import { ArrowUp, ChevronRight, Download, FileText, Folder, Home, Maximize2, Minimize2 } from "lucide-react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 export interface TreeNode {
   name: string;
@@ -19,7 +19,7 @@ function formatBytes(bytes: number): string {
   const k = 1024;
   const sizes = ["B", "KB", "MB", "GB", "TB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return (bytes / Math.pow(k, i)).toFixed(2) + " " + sizes[i];
+  return `${(bytes / k ** i).toFixed(2)} ${sizes[i]}`;
 }
 
 const CATEGORY_COLORS = {
@@ -35,8 +35,10 @@ const CATEGORY_COLORS = {
 function getCategoryColor(name: string, isFolder: boolean): string {
   if (isFolder) return CATEGORY_COLORS.folder;
   const ext = name.split(".").pop()?.toLowerCase() || "";
-  if (["mp4", "mkv", "avi", "mp3", "flac", "png", "jpg", "jpeg", "webp", "gif"].includes(ext)) return CATEGORY_COLORS.media;
-  if (["py", "ts", "tsx", "js", "jsx", "rs", "cpp", "c", "h", "html", "css", "json", "yml", "toml"].includes(ext)) return CATEGORY_COLORS.code;
+  if (["mp4", "mkv", "avi", "mp3", "flac", "png", "jpg", "jpeg", "webp", "gif"].includes(ext))
+    return CATEGORY_COLORS.media;
+  if (["py", "ts", "tsx", "js", "jsx", "rs", "cpp", "c", "h", "html", "css", "json", "yml", "toml"].includes(ext))
+    return CATEGORY_COLORS.code;
   if (["zip", "tar", "gz", "7z", "rar", "iso", "cab"].includes(ext)) return CATEGORY_COLORS.archive;
   if (["exe", "dll", "msi", "bin", "sys", "bat", "ps1", "sh"].includes(ext)) return CATEGORY_COLORS.exec;
   if (["pdf", "docx", "xlsx", "pptx", "txt", "md"].includes(ext)) return CATEGORY_COLORS.doc;
@@ -46,7 +48,12 @@ function getCategoryColor(name: string, isFolder: boolean): string {
 export function TreemapView({ rootData, rootPathName = "Root" }: TreemapViewProps) {
   const [history, setHistory] = useState<TreeNode[]>([rootData]);
   const [fullscreen, setFullscreen] = useState(false);
-  const [hoveredNode, setHoveredNode] = useState<{ name: string; size: number; isFolder: boolean; percent: number } | null>(null);
+  const [hoveredNode, setHoveredNode] = useState<{
+    name: string;
+    size: number;
+    isFolder: boolean;
+    percent: number;
+  } | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -80,11 +87,13 @@ export function TreemapView({ rootData, rootPathName = "Root" }: TreemapViewProp
   const treemapNodes = useMemo(() => {
     if (!currentNode) return [];
 
-    const root = d3.hierarchy<TreeNode>(currentNode)
+    const root = d3
+      .hierarchy<TreeNode>(currentNode)
       .sum((d) => (d.children && d.children.length > 0 ? 0 : d.size || 0))
       .sort((a, b) => (b.value || 0) - (a.value || 0));
 
-    const treemapLayout = d3.treemap<TreeNode>()
+    const treemapLayout = d3
+      .treemap<TreeNode>()
       .size([dimensions.width, dimensions.height])
       .paddingOuter(3)
       .paddingInner(2)
@@ -230,13 +239,23 @@ export function TreemapView({ rootData, rootPathName = "Root" }: TreemapViewProp
       {/* WizTree Stats Banner */}
       <div className="flex items-center justify-between px-1 text-sm text-zinc-300">
         <div className="flex items-center gap-4">
-          <span>Active: <strong className="text-zinc-200">{currentNode.name}</strong></span>
-          <span>Size: <strong className="text-amber-400">{formatBytes(totalCurrentSize)}</strong></span>
-          <span>Items: <strong className="text-zinc-200">{treemapNodes.length}</strong></span>
+          <span>
+            Active: <strong className="text-zinc-200">{currentNode.name}</strong>
+          </span>
+          <span>
+            Size: <strong className="text-amber-400">{formatBytes(totalCurrentSize)}</strong>
+          </span>
+          <span>
+            Items: <strong className="text-zinc-200">{treemapNodes.length}</strong>
+          </span>
         </div>
         {hoveredNode && (
           <div className="flex items-center gap-2 text-zinc-300 bg-zinc-800/80 px-2.5 py-1 rounded border border-zinc-700/50">
-            {hoveredNode.isFolder ? <Folder className="h-3.5 w-3.5 text-amber-400" /> : <FileText className="h-3.5 w-3.5 text-blue-400" />}
+            {hoveredNode.isFolder ? (
+              <Folder className="h-3.5 w-3.5 text-amber-400" />
+            ) : (
+              <FileText className="h-3.5 w-3.5 text-blue-400" />
+            )}
             <span className="font-medium">{hoveredNode.name}</span>
             <span className="text-amber-400 font-semibold">{formatBytes(hoveredNode.size)}</span>
             <span className="text-zinc-400">({hoveredNode.percent.toFixed(1)}%)</span>
@@ -251,7 +270,10 @@ export function TreemapView({ rootData, rootPathName = "Root" }: TreemapViewProp
           width={dimensions.width}
           height={dimensions.height}
           className="w-full h-full select-none"
+          role="img"
+          aria-label={`Treemap of ${currentNode.name}`}
         >
+          <title>{`Treemap of ${currentNode.name}`}</title>
           {treemapNodes.map((node, i) => {
             const w = node.x1 - node.x0;
             const h = node.y1 - node.y0;
@@ -263,11 +285,18 @@ export function TreemapView({ rootData, rootPathName = "Root" }: TreemapViewProp
             const percent = totalCurrentSize > 0 ? (nodeSize / totalCurrentSize) * 100 : 0;
 
             return (
+              // biome-ignore lint/a11y/useSemanticElements: SVG <g> has no semantic button equivalent; role+tabIndex+Enter/Space provided
               <g
                 key={i}
                 transform={`translate(${node.x0},${node.y0})`}
                 className="cursor-pointer transition-opacity duration-150 hover:opacity-90"
+                role="button"
+                tabIndex={0}
+                aria-label={`${node.data.name}, ${formatBytes(nodeSize)}`}
                 onClick={() => drillDown(node.data)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") drillDown(node.data);
+                }}
                 onMouseEnter={() =>
                   setHoveredNode({
                     name: node.data.name,
@@ -290,12 +319,7 @@ export function TreemapView({ rootData, rootPathName = "Root" }: TreemapViewProp
 
                 {/* Directory Header Bar */}
                 {isFolder && w > 45 && h > 22 && (
-                  <rect
-                    width={w}
-                    height={Math.min(18, h)}
-                    fill="rgba(0, 0, 0, 0.4)"
-                    stroke="none"
-                  />
+                  <rect width={w} height={Math.min(18, h)} fill="rgba(0, 0, 0, 0.4)" stroke="none" />
                 )}
 
                 {/* Node Label Text */}
@@ -308,19 +332,13 @@ export function TreemapView({ rootData, rootPathName = "Root" }: TreemapViewProp
                     fontWeight={isFolder ? "600" : "400"}
                     className="pointer-events-none drop-shadow-sm"
                   >
-                    {w > 60 ? node.data.name : node.data.name.slice(0, 8) + ".."}
+                    {w > 60 ? node.data.name : `${node.data.name.slice(0, 8)}..`}
                   </text>
                 )}
 
                 {/* Node Size Subtext */}
                 {w > 55 && h > 36 && (
-                  <text
-                    x={4}
-                    y={28}
-                    fill="#a1a1aa"
-                    fontSize={10}
-                    className="pointer-events-none"
-                  >
+                  <text x={4} y={28} fill="#a1a1aa" fontSize={10} className="pointer-events-none">
                     {formatBytes(nodeSize)}
                   </text>
                 )}
@@ -334,12 +352,24 @@ export function TreemapView({ rootData, rootPathName = "Root" }: TreemapViewProp
       <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-sm text-zinc-300">
         <div className="flex items-center gap-3 flex-wrap">
           <span className="text-zinc-400 font-medium">Legend:</span>
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: CATEGORY_COLORS.folder }}></span> Folder</span>
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: CATEGORY_COLORS.media }}></span> Media</span>
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: CATEGORY_COLORS.code }}></span> Code/Dev</span>
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: CATEGORY_COLORS.archive }}></span> Archives</span>
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: CATEGORY_COLORS.exec }}></span> Executable</span>
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: CATEGORY_COLORS.doc }}></span> Docs</span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-sm" style={{ background: CATEGORY_COLORS.folder }}></span> Folder
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-sm" style={{ background: CATEGORY_COLORS.media }}></span> Media
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-sm" style={{ background: CATEGORY_COLORS.code }}></span> Code/Dev
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-sm" style={{ background: CATEGORY_COLORS.archive }}></span> Archives
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-sm" style={{ background: CATEGORY_COLORS.exec }}></span> Executable
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-sm" style={{ background: CATEGORY_COLORS.doc }}></span> Docs
+          </span>
         </div>
         <span className="text-zinc-500 italic">Click any folder block to drill down</span>
       </div>

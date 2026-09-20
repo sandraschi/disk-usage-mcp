@@ -167,7 +167,9 @@ export function listSkills(): Promise<{ skills: SkillRef[] }> {
   return apiFetch("/api/skills");
 }
 
-export function getSkillContent(name: string): Promise<{ success: boolean; name?: string; content?: string; error?: string }> {
+export function getSkillContent(
+  name: string,
+): Promise<{ success: boolean; name?: string; content?: string; error?: string }> {
   return apiFetch(`/api/skills/${encodeURIComponent(name)}`);
 }
 
@@ -207,7 +209,10 @@ export function findLargeFiles(path: string, minSizeGb = 1.0, limit = 50): Promi
   });
 }
 
-export function takeSnapshot(paths: string[], label = ""): Promise<{ success: boolean; snapshot_file: string; drives: number }> {
+export function takeSnapshot(
+  paths: string[],
+  label = "",
+): Promise<{ success: boolean; snapshot_file: string; drives: number }> {
   return apiFetch("/api/snapshot/take", {
     method: "POST",
     body: JSON.stringify({ paths, label }),
@@ -241,7 +246,11 @@ export function llmDiscover(): Promise<LlmDiscover> {
   return apiFetch("/api/llm/discover");
 }
 
-export function llmProviders(): Promise<{ providers: LlmProvider[]; gpu: { present: boolean; detail: string }; note: string }> {
+export function llmProviders(): Promise<{
+  providers: LlmProvider[];
+  gpu: { present: boolean; detail: string };
+  note: string;
+}> {
   return apiFetch("/api/llm/providers");
 }
 
@@ -249,7 +258,12 @@ export function llmModels(provider: string): Promise<{ provider: string; models:
   return apiFetch(`/api/llm/models?provider=${encodeURIComponent(provider)}`);
 }
 
-export function llmChat(provider: string, model: string, messages: ChatMessage[], system = ""): Promise<{ success: boolean; reply?: string; provider?: string; model?: string; error?: string }> {
+export function llmChat(
+  provider: string,
+  model: string,
+  messages: ChatMessage[],
+  system = "",
+): Promise<{ success: boolean; reply?: string; provider?: string; model?: string; error?: string }> {
   return apiFetch("/api/llm/chat", {
     method: "POST",
     body: JSON.stringify({ provider, model, messages, system }),
