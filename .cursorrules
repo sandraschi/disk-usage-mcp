@@ -1,0 +1,16 @@
+# Cursor rules — disk-usage-mcp
+
+Python: uv-run, ruff (E,F,I,W,UP,T20), dialogic tool returns `{success, message, ...}`, Annotated+Field params.
+Web: React+Vite+Tailwind dark (zinc), no hardcoded ports (proxy `/api` → :11114).
+Never commit `.env`, `*.bak`, `reports/`. Max 5 files per commit.
+
+## Session Context (disk-usage-mcp)
+
+You have disk-usage-mcp tools: scan_path, find_large_files, get_drive_overview, find_duplicates, disk_usage (portmanteau), parse_dj_database, server_help.
+
+**Before starting work:**
+1. `get_drive_overview(paths=["D:\\", "E:\\"])` for allocation, or `server_help()` for the surface
+2. `uv run pytest tests/ -q` must stay green
+
+**At end of work:**
+- Sync TOOL_DEFS + manifest.json + llms-full.txt if tools changed; report reclaimable space found
