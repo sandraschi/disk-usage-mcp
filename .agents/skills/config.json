@@ -1,0 +1,9 @@
+{
+  "auto_load": true,
+  "skills": {
+    "disk-usage": {
+      "description": "Disk usage analysis and duplicate detection across multi-drive setups",
+      "entry": "SKILL.md"
+    }
+  }
+}

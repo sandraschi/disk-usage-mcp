@@ -1,0 +1,21 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.0
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+  - repo: local
+    hooks:
+      - id: biome
+        name: biome check (webapp)
+        entry: powershell.exe -NoProfile -File scripts/pre-commit-biome.ps1
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: no-bak
+        name: no .bak dross
+        entry: powershell.exe -NoProfile -Command "$bad = Get-ChildItem -Recurse -Include '*.bak','*.bak.*' -ErrorAction SilentlyContinue | Where-Object FullName -notmatch '\\.venv\\|node_modules'; if ($bad) { $bad | ForEach-Object { Write-Host $_.FullName }; exit 1 }"
+        language: system
+        pass_filenames: false
+        always_run: true

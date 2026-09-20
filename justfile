@@ -44,13 +44,26 @@ webapp-dev:
 webapp-build:
     Set-Location "{{justfile_directory()}}\web_sota"; bun run build
 
-# MCPB pack (Claude Desktop bundle)
+# MCPB pack (Claude Desktop bundle) - wipe+recopy so the bundle never goes stale
 mcpb-pack:
+    powershell.exe -NoProfile -Command "if (Test-Path 'mcpb\\src') { Remove-Item -Recurse -Force 'mcpb\\src' }; New-Item -ItemType Directory -Force -Path 'mcpb\\src\\disk_usage_mcp' | Out-Null; Copy-Item -Recurse -Force 'src\\disk_usage_mcp\\*' 'mcpb\\src\\disk_usage_mcp\\'; Get-ChildItem -Recurse -Include '__pycache__','*.pyc','*.bak' -Path 'mcpb\\src' | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue"
     mcpb pack . dist/disk-usage-mcp-v0.1.0.mcpb
 
 # Run tests
 test:
     uv run pytest tests/ -v
+
+# Coverage with floor (see [tool.coverage.report] in pyproject.toml)
+coverage:
+    uv run pytest tests/ -q --cov=src --cov-report=term-missing
+
+# Playwright e2e (spins backend + frontend itself)
+e2e:
+    powershell.exe -NoProfile -Command "Set-Location '{{justfile_directory()}}\\web_sota'; bun run e2e"
+
+# Browser walk pre-Tauri: connected badge wait + title-matching nav walk
+cua-webapp-test: e2e
+    Write-Host "cua-webapp-test: e2e nav walk green (see web_sota/e2e/app.spec.ts)" -ForegroundColor Green
 
 # Full local gate set (lint + format check + tests + webapp typecheck)
 certify:
@@ -58,6 +71,7 @@ certify:
     uv run ruff format --check src/ run_server.py
     uv run pytest tests/ -q
     powershell.exe -NoProfile -Command "Set-Location '{{justfile_directory()}}\\web_sota'; bun run typecheck"
+    powershell.exe -NoProfile -Command "Set-Location '{{justfile_directory()}}\\web_sota'; bun run biome:ci"
 
 # Build the PyInstaller backend .exe and copy to Tauri resources
 build-sidecar:
