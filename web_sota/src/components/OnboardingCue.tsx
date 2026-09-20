@@ -1,6 +1,6 @@
+import { Rocket } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Rocket } from "lucide-react";
 import { getSetupStatus, type SetupStatus } from "../lib/api";
 
 const DONE_KEY = "disk-onboarded-done";
@@ -17,7 +17,9 @@ export function OnboardingCue() {
   });
 
   useEffect(() => {
-    getSetupStatus().then(setSetup).catch(() => {});
+    getSetupStatus()
+      .then(setSetup)
+      .catch(() => {});
   }, []);
 
   if (!setup || dismissed) return null;
@@ -30,7 +32,10 @@ export function OnboardingCue() {
     .map(([name, b]) => `${name} (${b.install})`);
 
   return (
-    <div data-testid="onboarding-cue" className="rounded-xl border border-red-800 bg-red-950/60 p-4 flex items-center gap-4">
+    <div
+      data-testid="onboarding-cue"
+      className="rounded-xl border border-red-800 bg-red-950/60 p-4 flex items-center gap-4"
+    >
       <Rocket className="h-6 w-6 text-red-400 flex-shrink-0" />
       <div className="flex-1">
         <p className="font-semibold text-red-200">Setup required — scanners not found</p>

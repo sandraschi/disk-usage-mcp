@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { type ReactNode, useCallback, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { useZoom } from "../hooks/useZoom";
+import { HelpModal } from "./HelpModal";
+import { LoggerModal } from "./LoggerModal";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
-import { LoggerModal } from "./LoggerModal";
-import { HelpModal } from "./HelpModal";
-import { useZoom } from "../hooks/useZoom";
 
 const PAGE_TITLES: Record<string, string> = {
   "/dashboard": "Dashboard",
@@ -75,9 +75,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
           onOpenLogger={() => setLoggerOpen(true)}
           onOpenHelp={() => setHelpOpen(true)}
         />
-        <main className="flex-1 overflow-auto p-6">
-          {children}
-        </main>
+        <main className="flex-1 overflow-auto p-6">{children}</main>
       </div>
       <LoggerModal open={loggerOpen} onClose={() => setLoggerOpen(false)} />
       <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} context={context} />

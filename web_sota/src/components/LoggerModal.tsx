@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
 import { Download, FileText, Search, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { getLogs, type LogEntry } from "../lib/api";
 
 const LEVELS = ["", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"];
@@ -34,11 +34,7 @@ export function LoggerModal({ open, onClose }: { open: boolean; onClose: () => v
   if (!open) return null;
 
   const levelColor = (lv: string) =>
-    lv === "ERROR" || lv === "CRITICAL"
-      ? "text-red-400"
-      : lv === "WARNING"
-        ? "text-amber-400"
-        : "text-zinc-400";
+    lv === "ERROR" || lv === "CRITICAL" ? "text-red-400" : lv === "WARNING" ? "text-amber-400" : "text-zinc-400";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" data-testid="logger-modal">
@@ -60,7 +56,9 @@ export function LoggerModal({ open, onClose }: { open: boolean; onClose: () => v
             aria-label="Log level filter"
           >
             {LEVELS.map((l) => (
-              <option key={l} value={l}>{l || "All levels"}</option>
+              <option key={l} value={l}>
+                {l || "All levels"}
+              </option>
             ))}
           </select>
           <div className="relative flex-1">
@@ -75,7 +73,9 @@ export function LoggerModal({ open, onClose }: { open: boolean; onClose: () => v
           </div>
           <button
             onClick={() => {
-              const blob = new Blob([logs.map((l) => `${l.ts} [${l.level}] ${l.logger}: ${l.message}`).join("\n")], { type: "text/plain" });
+              const blob = new Blob([logs.map((l) => `${l.ts} [${l.level}] ${l.logger}: ${l.message}`).join("\n")], {
+                type: "text/plain",
+              });
               const url = URL.createObjectURL(blob);
               const a = document.createElement("a");
               a.href = url;
@@ -90,7 +90,14 @@ export function LoggerModal({ open, onClose }: { open: boolean; onClose: () => v
         </div>
         <div className="flex-1 overflow-auto p-3 font-mono text-sm space-y-0.5">
           {loading && <p className="text-zinc-400">Loading...</p>}
-          {error && <p className="text-red-400">{error} <button onClick={() => void refresh()} className="underline">Retry</button></p>}
+          {error && (
+            <p className="text-red-400">
+              {error}{" "}
+              <button onClick={() => void refresh()} className="underline">
+                Retry
+              </button>
+            </p>
+          )}
           {!loading && !error && logs.length === 0 && <p className="text-zinc-400">No log entries match.</p>}
           {logs.map((l, i) => (
             <div key={i} className="flex gap-2 text-sm">

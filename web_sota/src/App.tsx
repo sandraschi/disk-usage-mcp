@@ -1,16 +1,16 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { AppLayout } from "./components/AppLayout";
+import Apps from "./pages/Apps";
+import Chat from "./pages/Chat";
 import Dashboard from "./pages/Dashboard";
 import Drives from "./pages/Drives";
 import Duplicates from "./pages/Duplicates";
-import Inbox from "./pages/Inbox";
-import Tools from "./pages/Tools";
-import Skills from "./pages/Skills";
-import Chat from "./pages/Chat";
-import Logs from "./pages/Logs";
-import Apps from "./pages/Apps";
-import Settings from "./pages/Settings";
 import Help from "./pages/Help";
+import Inbox from "./pages/Inbox";
+import Logs from "./pages/Logs";
+import Settings from "./pages/Settings";
+import Skills from "./pages/Skills";
+import Tools from "./pages/Tools";
 
 export default function App() {
   return (

@@ -35,7 +35,9 @@ export function HelpModal({ open, onClose, context }: { open: boolean; onClose: 
         <ul className="p-4 space-y-2">
           {shown.map((l) => (
             <li key={l.to} className="flex items-center justify-between text-sm">
-              <Link to={l.to} onClick={onClose} className="text-amber-400 hover:underline">{l.page}</Link>
+              <Link to={l.to} onClick={onClose} className="text-amber-400 hover:underline">
+                {l.page}
+              </Link>
               <code className="text-zinc-500">{l.docs}</code>
             </li>
           ))}
