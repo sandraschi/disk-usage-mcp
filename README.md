@@ -53,6 +53,25 @@ uv run python src/disk_usage_mcp/server.py
 | `/api/snapshots` | GET | List saved snapshots |
 | `/api/snapshot/{file}` | GET | Get snapshot data |
 
+## Stack
+
+- Backend: Python 3.12+, FastMCP 3.4, FastAPI + uvicorn, httpx, prefab-ui
+- Frontend (`web_sota/`): React 19, Vite 6, TailwindCSS v4, Lucide icons, Framer Motion, Zustand, d3 + recharts
+- Scanners: dua-cli, czkawka_cli (external binaries, see docs/ONBOARDING.md)
+- Native: Tauri 2 + PyInstaller sidecar (`native/`)
+- Gates: ruff (incl. T20), pyright, pytest + coverage, tsc, Biome, Playwright e2e
+
+## Docs
+
+- [docs/README.md](./docs/README.md) — doc index
+- [docs/ONBOARDING.md](./docs/ONBOARDING.md) — first-time setup
+- [docs/CONFIGURATION.md](./docs/CONFIGURATION.md) — env, ports, snapshots, fleet
+- [docs/DEVELOPMENT.md](./docs/DEVELOPMENT.md) — gates, adding tools/endpoints/pages
+- [docs/TOOLS.md](./docs/TOOLS.md) — tool/prompt/resource reference
+- [docs/TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md) — common failures
+- [llms-full.txt](./llms-full.txt) — LLM-oriented reference
+- [CHANGELOG.md](./CHANGELOG.md) — release history
+
 ## Ports
 
 - Backend (FastAPI): 11114
