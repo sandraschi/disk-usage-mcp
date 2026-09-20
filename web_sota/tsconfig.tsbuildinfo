@@ -1,1 +1,0 @@
-{"root":["./src/app.tsx","./src/main.tsx","./src/components/applayout.tsx","./src/components/sidebar.tsx","./src/components/topbar.tsx","./src/lib/api.ts","./src/pages/dashboard.tsx","./src/pages/drives.tsx","./src/pages/duplicates.tsx","./src/pages/settings.tsx","./src/stores/connection.ts"],"version":"5.9.3"}

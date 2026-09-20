@@ -14,7 +14,9 @@ mcpb/src/
 *.bak.*
 .ruff_cache/
 .pytest_cache/
+.coverage*
 htmlcov/
+*.tsbuildinfo
 target/
 native/target/
 native/gen/

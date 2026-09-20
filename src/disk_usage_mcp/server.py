@@ -52,9 +52,7 @@ async def server_help(
     from disk_usage_mcp.http_app import TOOL_DEFS
     from disk_usage_mcp.http_app import app as fastapi_app
 
-    routes = sorted(
-        {getattr(r, "path", "") for r in fastapi_app.routes if getattr(r, "path", "").startswith("/api")}
-    )
+    routes = sorted({getattr(r, "path", "") for r in fastapi_app.routes if getattr(r, "path", "").startswith("/api")})
     tools = TOOL_DEFS
     if topic == "snapshots":
         routes = [r for r in routes if "snapshot" in r]
