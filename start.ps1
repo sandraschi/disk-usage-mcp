@@ -9,6 +9,15 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+
+# Environment bootstrap (not launcher logic - safe to keep across engine updates):
+# ensure per-user fleet tool dirs are on PATH even when the calling shell predates
+# their install (stale-shell proof). Children spawned below inherit this process env.
+foreach ($toolDir in @("$env:USERPROFILE\.bun\bin", "$env:USERPROFILE\.local\bin")) {
+    if ((Test-Path -LiteralPath $toolDir) -and ($env:PATH -split ';' -notcontains $toolDir)) {
+        $env:PATH = "$toolDir;$env:PATH"
+    }
+}
 $ReposRoot = if ($env:FLEET_REPOS_ROOT) { $env:FLEET_REPOS_ROOT } else { 'D:\Dev\repos' }
 $EnginePath = Join-Path $ReposRoot 'mcp-central-docs\scripts\Invoke-FleetWebappStart.ps1'
 
