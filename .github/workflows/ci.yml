@@ -1,0 +1,25 @@
+name: ci
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+jobs:
+  gates:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - name: Lint
+        run: uv run ruff check src/ run_server.py
+      - name: Format check
+        run: uv run ruff format --check src/ run_server.py
+      - name: Tests
+        run: uv run pytest tests/ -q
+      - uses: oven-sh/setup-bun@v2
+      - name: Install webapp deps
+        working-directory: web_sota
+        run: bun install --frozen-lockfile
+      - name: Typecheck webapp
+        working-directory: web_sota
+        run: bun run typecheck
