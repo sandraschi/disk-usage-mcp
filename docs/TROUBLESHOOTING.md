@@ -33,7 +33,7 @@ Install the scanners and restart the backend so PATH picks them up:
 
 ```powershell
 winget install Byron.dua-cli
-winget install qarmin.czkawka
+winget install qarmin.czkawka.cli
 ```
 
 `GET /api/setup/status` reports exactly which binary is missing.

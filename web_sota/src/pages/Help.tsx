@@ -52,7 +52,7 @@ export default function Help() {
         <ol className="list-decimal list-inside text-sm text-zinc-300 space-y-1">
           <li>
             Install the scanners: <code className="text-amber-400">winget install Byron.dua-cli</code> and{" "}
-            <code className="text-amber-400">winget install qarmin.czkawka</code>
+            <code className="text-amber-400">winget install qarmin.czkawka.cli</code>
           </li>
           <li>
             Restart the backend (<code className="text-zinc-100">.\start.ps1</code>) so PATH picks them up

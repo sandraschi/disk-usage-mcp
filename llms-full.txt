@@ -8,7 +8,7 @@ FastMCP server wrapping dua-cli and czkawka_cli for disk usage analysis and dupl
 
 - Python 3.12+
 - [dua-cli](https://github.com/Byron/dua-cli) — `winget install Byron.dua-cli`
-- [czkawka_cli](https://github.com/qarmin/czkawka) — `winget install qarmin.czkawka`
+- [czkawka_cli](https://github.com/qarmin/czkawka) — `winget install qarmin.czkawka.cli` (installs as `windows_czkawka_cli`; cargo installs provide `czkawka_cli` — both resolve)
 - FastMCP 3.4+
 - FastAPI + uvicorn
 

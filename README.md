@@ -18,7 +18,7 @@ Designed for multi-TB media libraries spread across backup spinners — understa
 
 - Python 3.12+
 - [dua-cli](https://github.com/Byron/dua-cli) — `winget install Byron.dua-cli`
-- [czkawka_cli](https://github.com/qarmin/czkawka) — `winget install qarmin.czkawka`
+- [czkawka_cli](https://github.com/qarmin/czkawka) — `winget install qarmin.czkawka.cli` (binary resolves as `windows_czkawka_cli` or `czkawka_cli`)
 
 ## Quick Start
 

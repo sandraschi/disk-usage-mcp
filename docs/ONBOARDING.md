@@ -14,7 +14,7 @@ biggest rectangles.
 
 - Windows 10/11, Python 3.12+ (via `uv`), bun (install from https://bun.sh)
 - dua-cli: `winget install Byron.dua-cli`
-- czkawka_cli: `winget install qarmin.czkawka`
+- czkawka: `winget install qarmin.czkawka.cli` (binary lands as `windows_czkawka_cli`)
 - Optional for Chat: Ollama (`winget install Ollama.Ollama`, then `ollama pull llama3.1`) or LM Studio with a loaded model
 
 ## Pitfalls
