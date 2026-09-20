@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
 import { LayoutGrid, RefreshCw } from "lucide-react";
-import { getFleetApps, type FleetApp } from "../lib/api";
+import { useEffect, useState } from "react";
+import { type FleetApp, getFleetApps } from "../lib/api";
 
 export default function Apps() {
   const [apps, setApps] = useState<FleetApp[]>([]);
@@ -38,7 +38,10 @@ export default function Apps() {
       <div className="flex items-center justify-between mb-1">
         <p className="font-mono text-sm text-amber-400">{a.repo}</p>
         {a.live !== undefined && (
-          <span className={`w-2 h-2 rounded-full ${a.live ? "bg-green-500" : "bg-zinc-600"}`} title={a.live ? "Live" : "Not responding"} />
+          <span
+            className={`w-2 h-2 rounded-full ${a.live ? "bg-green-500" : "bg-zinc-600"}`}
+            title={a.live ? "Live" : "Not responding"}
+          />
         )}
       </div>
       <p className="text-sm text-zinc-300 truncate">{a.description}</p>
@@ -77,7 +80,9 @@ export default function Apps() {
       {error && (
         <div className="text-center py-12" data-testid="apps-error">
           <p className="text-red-400 mb-2">{error}</p>
-          <button onClick={() => void load(false)} className="px-3 py-1.5 bg-zinc-800 rounded-lg text-sm">Retry</button>
+          <button onClick={() => void load(false)} className="px-3 py-1.5 bg-zinc-800 rounded-lg text-sm">
+            Retry
+          </button>
         </div>
       )}
       {!loading && !error && apps.length === 0 && (

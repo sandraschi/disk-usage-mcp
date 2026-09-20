@@ -1,19 +1,28 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Copy, Database, HardDrive, Scan } from "lucide-react";
-import { getSetupStatus, getStatus, listSnapshots, type SnapshotInfo, type StatusResponse } from "../lib/api";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { OnboardingCue } from "../components/OnboardingCue";
+import { getSetupStatus, getStatus, listSnapshots, type SnapshotInfo, type StatusResponse } from "../lib/api";
 
 function MockBadge() {
   return (
-    <span className="ml-1 px-1.5 py-0.5 bg-yellow-600/30 text-yellow-300 rounded text-sm font-normal" data-testid="mock-badge">
+    <span
+      className="ml-1 px-1.5 py-0.5 bg-yellow-600/30 text-yellow-300 rounded text-sm font-normal"
+      data-testid="mock-badge"
+    >
       MOCK
     </span>
   );
 }
 
-function KpiCard({ icon: Icon, label, value, testid, mock }: {
+function KpiCard({
+  icon: Icon,
+  label,
+  value,
+  testid,
+  mock,
+}: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: string;
@@ -32,7 +41,10 @@ function KpiCard({ icon: Icon, label, value, testid, mock }: {
           <Icon className="h-5 w-5" />
         </div>
         <div>
-          <p className="text-sm text-zinc-300">{label}{mock && <MockBadge />}</p>
+          <p className="text-sm text-zinc-300">
+            {label}
+            {mock && <MockBadge />}
+          </p>
           <p className="text-xl font-semibold text-zinc-100">{value}</p>
         </div>
       </div>
@@ -47,9 +59,15 @@ export default function Dashboard() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    getStatus().then(setStatus).catch((e: unknown) => setError(e instanceof Error ? e.message : "Backend offline"));
-    listSnapshots().then((r) => setSnapshots(r.snapshots)).catch(() => {});
-    getSetupStatus().then((s) => setReady(s.ready)).catch(() => setReady(null));
+    getStatus()
+      .then(setStatus)
+      .catch((e: unknown) => setError(e instanceof Error ? e.message : "Backend offline"));
+    listSnapshots()
+      .then((r) => setSnapshots(r.snapshots))
+      .catch(() => {});
+    getSetupStatus()
+      .then((s) => setReady(s.ready))
+      .catch(() => setReady(null));
   }, []);
 
   const lastSnapshot = snapshots.length > 0 ? snapshots[0] : null;
@@ -64,19 +82,47 @@ export default function Dashboard() {
           {error && <span className="text-red-400"> — {error}</span>}
         </p>
         <p className="text-sm text-zinc-300">
-          Quick start: <Link to="/drives" className="text-amber-400 hover:underline">scan a drive</Link> →{" "}
-          <Link to="/duplicates" className="text-amber-400 hover:underline">hunt duplicates</Link> →{" "}
-          <Link to="/inbox" className="text-amber-400 hover:underline">snapshot it</Link>. Chat answers run on your local LLM.
+          Quick start:{" "}
+          <Link to="/drives" className="text-amber-400 hover:underline">
+            scan a drive
+          </Link>{" "}
+          →{" "}
+          <Link to="/duplicates" className="text-amber-400 hover:underline">
+            hunt duplicates
+          </Link>{" "}
+          →{" "}
+          <Link to="/inbox" className="text-amber-400 hover:underline">
+            snapshot it
+          </Link>
+          . Chat answers run on your local LLM.
         </p>
       </section>
 
       <OnboardingCue />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard icon={HardDrive} label="Status" value={status?.status ?? (showMock ? "ok" : "...")} testid="kpi-server" mock={showMock && !status} />
-        <KpiCard icon={Scan} label="Tools" value={status ? String(status.tool_count) : showMock ? "9" : "-"} testid="kpi-tools" mock={showMock && !status} />
+        <KpiCard
+          icon={HardDrive}
+          label="Status"
+          value={status?.status ?? (showMock ? "ok" : "...")}
+          testid="kpi-server"
+          mock={showMock && !status}
+        />
+        <KpiCard
+          icon={Scan}
+          label="Tools"
+          value={status ? String(status.tool_count) : showMock ? "9" : "-"}
+          testid="kpi-tools"
+          mock={showMock && !status}
+        />
         <KpiCard icon={Database} label="Snapshots" value={String(snapshots.length)} testid="kpi-snapshots" />
-        <KpiCard icon={Copy} label="Version" value={status?.version ?? (showMock ? "0.1.0" : "-")} testid="kpi-version" mock={showMock && !status} />
+        <KpiCard
+          icon={Copy}
+          label="Version"
+          value={status?.version ?? (showMock ? "0.1.0" : "-")}
+          testid="kpi-version"
+          mock={showMock && !status}
+        />
       </div>
 
       {lastSnapshot && (

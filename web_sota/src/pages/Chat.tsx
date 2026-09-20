@@ -1,11 +1,6 @@
-import { useEffect, useRef, useState } from "react";
 import { Download, Eraser, Send, Square } from "lucide-react";
-import {
-  getSkillContent,
-  llmChat,
-  llmChatStream,
-  type ChatMessage,
-} from "../lib/api";
+import { useEffect, useRef, useState } from "react";
+import { type ChatMessage, getSkillContent, llmChat, llmChatStream } from "../lib/api";
 import { useLlmStore } from "../stores/llm";
 
 const HISTORY_KEY = "disk-chat-history";
@@ -17,9 +12,12 @@ interface Personalities {
 
 const PERSONALITIES: Personalities = {
   Default: "You are a helpful assistant for disk usage analysis.",
-  Reclaimer: "You are a terse storage-ops assistant. Answer in short bullet lists. Always quantify GB/MB. Never suggest deleting anything without explicit confirmation.",
-  Explorer: "You are a verbose, curious analyst. Explain what the numbers mean, why drives fill up, and how the tools (dua-cli, czkawka) work under the hood.",
-  "DJ Librarian": "You are an assistant for DJs managing huge music libraries. Relate every answer to keeping a music collection lean: duplicates, lossless vs MP3 sizes, backup hygiene.",
+  Reclaimer:
+    "You are a terse storage-ops assistant. Answer in short bullet lists. Always quantify GB/MB. Never suggest deleting anything without explicit confirmation.",
+  Explorer:
+    "You are a verbose, curious analyst. Explain what the numbers mean, why drives fill up, and how the tools (dua-cli, czkawka) work under the hood.",
+  "DJ Librarian":
+    "You are an assistant for DJs managing huge music libraries. Relate every answer to keeping a music collection lean: duplicates, lossless vs MP3 sizes, backup hygiene.",
   Custom: "",
 };
 
@@ -103,7 +101,13 @@ export default function Chat() {
       let assistant = "";
       setMessages([...next, { role: "assistant", content: "", streaming: true }]);
       try {
-        for await (const delta of llmChatStream(selectedProvider, selectedModel, payload, systemPrompt(), controller.signal)) {
+        for await (const delta of llmChatStream(
+          selectedProvider,
+          selectedModel,
+          payload,
+          systemPrompt(),
+          controller.signal,
+        )) {
           assistant += delta;
           setMessages([...next, { role: "assistant", content: assistant, streaming: true }]);
         }
@@ -142,10 +146,9 @@ export default function Chat() {
   const stop = () => abortRef.current?.abort();
 
   const exportTxt = () => {
-    const blob = new Blob(
-      [messages.map((m) => `${m.role.toUpperCase()}: ${m.content}`).join("\n\n")],
-      { type: "text/plain" },
-    );
+    const blob = new Blob([messages.map((m) => `${m.role.toUpperCase()}: ${m.content}`).join("\n\n")], {
+      type: "text/plain",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -167,10 +170,20 @@ export default function Chat() {
     <div data-testid="chat-page" className="space-y-4 h-full flex flex-col">
       <h2 className="text-2xl font-bold text-zinc-100">Chat</h2>
 
-      <div className="flex flex-wrap items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-xl p-3" data-testid="chat-controls">
-        <span className={`w-2 h-2 rounded-full ${providerOk ? "bg-green-500" : "bg-yellow-500"}`} title={providerOk ? "LLM reachable" : "No local LLM detected"} />
+      <div
+        className="flex flex-wrap items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-xl p-3"
+        data-testid="chat-controls"
+      >
+        <span
+          className={`w-2 h-2 rounded-full ${providerOk ? "bg-green-500" : "bg-yellow-500"}`}
+          title={providerOk ? "LLM reachable" : "No local LLM detected"}
+        />
         <span className="text-sm text-zinc-300" data-testid="chat-provider-status">
-          {probing ? "Probing..." : providerOk ? `${selectedProvider}${selectedModel ? ` / ${selectedModel}` : ""}` : "No local LLM — start Ollama or LM Studio"}
+          {probing
+            ? "Probing..."
+            : providerOk
+              ? `${selectedProvider}${selectedModel ? ` / ${selectedModel}` : ""}`
+              : "No local LLM — start Ollama or LM Studio"}
         </span>
         <select
           value={personality}
@@ -180,7 +193,9 @@ export default function Chat() {
           aria-label="Personality"
         >
           {Object.keys(PERSONALITIES).map((p) => (
-            <option key={p} value={p}>{p}</option>
+            <option key={p} value={p}>
+              {p}
+            </option>
           ))}
         </select>
         <label className="flex items-center gap-1 text-sm text-zinc-300">
@@ -188,11 +203,23 @@ export default function Chat() {
           Stream
         </label>
         <div className="flex-1" />
-        <button onClick={exportTxt} disabled={messages.length === 0} className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-40 rounded-lg text-sm" data-testid="chat-export">
-          <Download className="h-4 w-4 inline mr-1" />Export
+        <button
+          onClick={exportTxt}
+          disabled={messages.length === 0}
+          className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-40 rounded-lg text-sm"
+          data-testid="chat-export"
+        >
+          <Download className="h-4 w-4 inline mr-1" />
+          Export
         </button>
-        <button onClick={clear} disabled={messages.length === 0} className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-40 rounded-lg text-sm" data-testid="chat-clear">
-          <Eraser className="h-4 w-4 inline mr-1" />Clear
+        <button
+          onClick={clear}
+          disabled={messages.length === 0}
+          className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-40 rounded-lg text-sm"
+          data-testid="chat-clear"
+        >
+          <Eraser className="h-4 w-4 inline mr-1" />
+          Clear
         </button>
       </div>
 
@@ -206,14 +233,23 @@ export default function Chat() {
         />
       )}
 
-      <div className="flex-1 overflow-auto bg-zinc-900 border border-zinc-800 rounded-xl p-4 space-y-3 min-h-[240px]" data-testid="chat-messages">
+      <div
+        className="flex-1 overflow-auto bg-zinc-900 border border-zinc-800 rounded-xl p-4 space-y-3 min-h-[240px]"
+        data-testid="chat-messages"
+      >
         {messages.length === 0 && (
           <div className="text-center py-8">
             <p className="text-zinc-200 mb-1">Ask about your drives, duplicates, or snapshots.</p>
-            <p className="text-sm text-zinc-400 mb-4">Answers come from your local LLM — nothing leaves this machine.</p>
+            <p className="text-sm text-zinc-400 mb-4">
+              Answers come from your local LLM — nothing leaves this machine.
+            </p>
             <div className="flex flex-wrap justify-center gap-2" data-testid="example-prompts">
               {EXAMPLE_PROMPTS.map((ex) => (
-                <button key={ex} onClick={() => void send(ex)} className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm text-zinc-300">
+                <button
+                  key={ex}
+                  onClick={() => void send(ex)}
+                  className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm text-zinc-300"
+                >
                   {ex}
                 </button>
               ))}
@@ -221,7 +257,10 @@ export default function Chat() {
           </div>
         )}
         {messages.map((m, i) => (
-          <div key={i} className={`max-w-[85%] rounded-xl px-3 py-2 text-sm whitespace-pre-wrap ${m.role === "user" ? "ml-auto bg-amber-600/20 text-amber-100" : "bg-zinc-800 text-zinc-100"}`}>
+          <div
+            key={i}
+            className={`max-w-[85%] rounded-xl px-3 py-2 text-sm whitespace-pre-wrap ${m.role === "user" ? "ml-auto bg-amber-600/20 text-amber-100" : "bg-zinc-800 text-zinc-100"}`}
+          >
             {m.content}
             {m.streaming && <span className="animate-pulse">▍</span>}
           </div>
@@ -241,11 +280,20 @@ export default function Chat() {
           data-testid="chat-input"
         />
         {sending && useStream ? (
-          <button onClick={stop} className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-xl text-sm" aria-label="Stop">
+          <button
+            onClick={stop}
+            className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-xl text-sm"
+            aria-label="Stop"
+          >
             <Square className="h-4 w-4" />
           </button>
         ) : (
-          <button onClick={() => void send(input)} disabled={sending || !input.trim()} className="px-4 py-2 bg-amber-600 hover:bg-amber-500 disabled:bg-zinc-700 rounded-xl text-sm font-medium" data-testid="chat-send">
+          <button
+            onClick={() => void send(input)}
+            disabled={sending || !input.trim()}
+            className="px-4 py-2 bg-amber-600 hover:bg-amber-500 disabled:bg-zinc-700 rounded-xl text-sm font-medium"
+            data-testid="chat-send"
+          >
             <Send className="h-4 w-4" />
           </button>
         )}

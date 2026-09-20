@@ -1,8 +1,8 @@
-import { useState } from "react";
 import { motion } from "framer-motion";
-import { HardDrive, Scan, Camera } from "lucide-react";
-import { scanPath, takeSnapshot, listSnapshots } from "../lib/api";
+import { Camera, HardDrive, Scan } from "lucide-react";
+import { useState } from "react";
 import { TreemapView, type TreeNode } from "../components/TreemapView";
+import { listSnapshots, scanPath, takeSnapshot } from "../lib/api";
 
 export default function Drives() {
   const [scanPathInput, setScanPathInput] = useState("D:\\");
@@ -96,23 +96,23 @@ export default function Drives() {
       )}
 
       {treeData && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          data-testid="drives-result"
-        >
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} data-testid="drives-result">
           <TreemapView rootData={treeData} rootPathName={scanPathInput} />
         </motion.div>
       )}
 
       {!treeData && !scanning && (
-        <div className="flex flex-col items-center justify-center py-16 text-zinc-400 bg-zinc-900/50 border border-zinc-800/80 rounded-xl" data-testid="drives-empty">
+        <div
+          className="flex flex-col items-center justify-center py-16 text-zinc-400 bg-zinc-900/50 border border-zinc-800/80 rounded-xl"
+          data-testid="drives-empty"
+        >
           <HardDrive className="h-12 w-12 mb-4 text-amber-500/80" />
           <p className="text-zinc-200 font-medium">Interactive drill-down treemap</p>
-          <p className="text-sm text-zinc-400 mt-1">Enter a drive path above and click Scan to analyze directory usage.</p>
+          <p className="text-sm text-zinc-400 mt-1">
+            Enter a drive path above and click Scan to analyze directory usage.
+          </p>
         </div>
       )}
     </div>
   );
 }
-
