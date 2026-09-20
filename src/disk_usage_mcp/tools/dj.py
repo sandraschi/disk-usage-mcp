@@ -1,4 +1,4 @@
-"""DJ library integration — VirtualDJ database.xml + Serato database v2 parsers."""
+"""DJ library integration - VirtualDJ database.xml + Serato database v2 parsers."""
 
 import os
 import sqlite3
@@ -171,6 +171,7 @@ async def parse_dj_database(
 
         return {
             "success": True,
+            "message": f"Parsed {len(tracks)} tracks from {source} database",
             "source": source,
             "path": target,
             "total_tracks": len(tracks),

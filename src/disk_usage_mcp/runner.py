@@ -9,7 +9,7 @@ def _resolve_binary(name: str) -> str:
     """Resolve a CLI binary via PATH, returning the name for subprocess use."""
     resolved = shutil.which(name)
     if not resolved:
-        logger.warning("Binary %s not found on PATH — tool calls will fail", name)
+        logger.warning("Binary %s not found on PATH - tool calls will fail", name)
         return name
     return resolved
 
@@ -28,7 +28,7 @@ async def _run(cmd: list[str], timeout: int = 120) -> tuple[str, str, int]:
         proc.kill()
         await proc.wait()
         msg = f"Command timed out after {timeout}s: {' '.join(cmd)}"
-        logger.error(msg)
+        logger.exception(msg)
         return "", msg, -1
 
 

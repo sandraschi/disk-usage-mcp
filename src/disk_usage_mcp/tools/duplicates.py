@@ -17,11 +17,19 @@ async def find_duplicates(
     Results are grouped by duplicate hash with file paths and sizes.
 
     ## Return Format
-    {"success": true, "duplicates": [{"hash": "...", "size_mb": 500, "files": ["path1", "path2"]}]}
+    {"success": true, "message": str, "duplicates": [{"hash": "...", "size_mb": 500, "files": ["path1", "path2"]}]}
+
+    ## Examples
+    await find_duplicates(search_paths=["D:\\", "E:\\"])
+    await find_duplicates(search_paths=["D:\\Media"], min_size_mb=500)
     """
+    if ctx is not None:
+        await ctx.info(f"Scanning {len(search_paths)} paths for duplicates over {min_size_mb} MB")
     result = await run_czkawka_dups(search_paths, min_size_mb)
     if not result["success"]:
-        return {"success": False, "error": result["error"]}
+        if ctx is not None:
+            await ctx.error(f"Duplicate scan failed: {result['error']}")
+        return {"success": False, "message": result["error"], "error": result["error"]}
 
     data = result.get("files", result.get("data", []))
     if isinstance(data, list):
@@ -37,5 +45,14 @@ async def find_duplicates(
                         "files": files if isinstance(files, list) else [files],
                     }
                 )
-        return {"success": True, "duplicates": duplicates}
-    return {"success": True, "duplicates": []}
+        if ctx is not None:
+            await ctx.info(f"Duplicate scan complete: {len(duplicates)} groups")
+        reclaim_mb = round(sum(d["size_mb"] for d in duplicates), 2)
+        return {
+            "success": True,
+            "message": f"Found {len(duplicates)} duplicate groups ({reclaim_mb} MB reclaimable)",
+            "duplicates": duplicates,
+        }
+    if ctx is not None:
+        await ctx.info("Duplicate scan complete: no groups found")
+    return {"success": True, "message": "No duplicates found", "duplicates": []}

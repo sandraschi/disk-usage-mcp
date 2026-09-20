@@ -22,7 +22,7 @@ async def disk_usage(
     - drive_overview: Summary across multiple drive roots
 
     ## Return Format
-    {"success": bool, "data": {...} | "output": str, "error": str | null}
+    {"success": bool, "message": str, "data": {...} | "output": str, "error": str | null}
 
     ## Examples
     await disk_usage(operation="scan", path="C:\\Users")
@@ -38,7 +38,10 @@ async def disk_usage(
         if operation == "tree":
             if not path:
                 return _error_response("path is required for tree operation", "validation")
-            return await run_dua_tree(path, max_depth)
+            result = await run_dua_tree(path, max_depth)
+            if result.get("success") and "output" in result:
+                result["message"] = f"Tree for {path} at depth {max_depth}"
+            return result
 
         if operation == "drive_overview":
             if not paths:
@@ -47,7 +50,11 @@ async def disk_usage(
             for p in paths:
                 r = await run_dua(p, 1)
                 results.append({"path": p, **r})
-            return {"success": True, "drives": results}
+            return {
+                "success": True,
+                "message": f"Overview across {len(results)} paths",
+                "drives": results,
+            }
 
         return _error_response(f"Unknown operation: {operation}", "validation")
     except Exception as e:
