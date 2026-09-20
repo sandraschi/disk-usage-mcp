@@ -398,7 +398,8 @@ which ports answer; zombies get cleared by their own start scripts.
 
 Keep this manual beside the dashboard, not inside your head: the workflows above cover
 every session this server is built for, and the receipts they produce compound into a
-library that stays lean because every gigabyte is accounted for, every quarter, on purpose.
+library that stays lean because every gigabyte is accounted for, every quarter, on purpose,
+permanently.
 
 
 
