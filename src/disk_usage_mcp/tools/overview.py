@@ -16,7 +16,11 @@ async def get_drive_overview(
     subdirectories. Returns total size per drive and grand total.
 
     ## Return Format
-    {"success": true, "drives": [{"path": "D:\\", "size_bytes": ...}], "total_bytes": ...}
+    {"success": true, "message": str, "drives": [{"path": "D:\\", "size_bytes": ...}], "total_bytes": ...}
+
+    ## Examples
+    await get_drive_overview(paths=["C:\\", "D:\\"])
+    await get_drive_overview(paths=["D:\\", "E:\\", "F:\\"])
     """
     drives = []
     total_bytes = 0
@@ -31,4 +35,9 @@ async def get_drive_overview(
             drives.append({"path": p, "size_bytes": 0, "error": result.get("error", "scan failed")})
 
     drives.sort(key=lambda d: d["size_bytes"], reverse=True)
-    return {"success": True, "drives": drives, "total_bytes": total_bytes}
+    return {
+        "success": True,
+        "message": f"Scanned {len(drives)} drives, {total_bytes} bytes total",
+        "drives": drives,
+        "total_bytes": total_bytes,
+    }
