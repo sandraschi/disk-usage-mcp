@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
-from disk_usage_mcp.config import BACKEND_PORT, SNAPSHOTS_DIR
+from disk_usage_mcp.config import BACKEND_PORT, CZKAWKA_BIN, DUA_BIN, SNAPSHOTS_DIR
 from disk_usage_mcp.runner import run_dua
 
 logger = logging.getLogger("disk-usage-mcp.http")
@@ -439,18 +439,22 @@ async def get_skill(name: str):
 
 @app.get("/api/setup/status")
 async def setup_status():
-    """Binary prerequisites for onboarding (dua-cli, czkawka_cli). No keys, no auth."""
+    """Binary prerequisites for onboarding (dua-cli, czkawka). No keys, no auth."""
     import shutil as _shutil
 
-    dua = _shutil.which("dua")
-    czkawka = _shutil.which("czkawka_cli")
+    dua = _shutil.which(DUA_BIN)
+    czkawka = _shutil.which(CZKAWKA_BIN) or _shutil.which("czkawka_cli") or _shutil.which("windows_czkawka_cli")
     ready = bool(dua and czkawka)
     return {
         "ready": ready,
         "message": "All prerequisites installed" if ready else "Install missing binaries (see docs/ONBOARDING.md)",
         "binaries": {
             "dua": {"found": bool(dua), "path": dua or "", "install": "winget install Byron.dua-cli"},
-            "czkawka_cli": {"found": bool(czkawka), "path": czkawka or "", "install": "winget install qarmin.czkawka"},
+            "czkawka_cli": {
+                "found": bool(czkawka),
+                "path": czkawka or "",
+                "install": "winget install qarmin.czkawka.cli",
+            },
         },
     }
 

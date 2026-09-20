@@ -2,16 +2,26 @@ import asyncio
 import logging
 import shutil
 
+from disk_usage_mcp.config import CZKAWKA_BIN
+
 logger = logging.getLogger(__name__)
 
+# Winget installs the binary as windows_czkawka_cli, cargo as czkawka_cli.
+_CZKAWKA_CANDIDATES = ("czkawka_cli", "windows_czkawka_cli")
 
-def _resolve_binary(name: str) -> str:
-    """Resolve a CLI binary via PATH, returning the name for subprocess use."""
-    resolved = shutil.which(name)
-    if not resolved:
-        logger.warning("Binary %s not found on PATH - tool calls will fail", name)
-        return name
-    return resolved
+
+def _resolve_binary(name: str, fallbacks: tuple[str, ...] = ()) -> str:
+    """Resolve a CLI binary via PATH, trying fallbacks (winget vs cargo names)."""
+    seen: list[str] = []
+    for candidate in (name, *fallbacks):
+        if candidate in seen:
+            continue
+        seen.append(candidate)
+        resolved = shutil.which(candidate)
+        if resolved:
+            return resolved
+    logger.warning("Binary %s not found on PATH (tried %s) - tool calls will fail", name, ", ".join(seen))
+    return name
 
 
 async def _run(cmd: list[str], timeout: int = 120) -> tuple[str, str, int]:
@@ -59,8 +69,8 @@ async def run_dua_tree(path: str, max_depth: int = 3) -> dict:
 
 
 async def run_czkawka_dups(paths: list[str], min_size_mb: int = 100) -> dict:
-    """Run czkawka_cli dup and return parsed JSON."""
-    binary = _resolve_binary("czkawka_cli")
+    """Run czkawka dup and return parsed JSON (binary name varies by installer)."""
+    binary = _resolve_binary(CZKAWKA_BIN, _CZKAWKA_CANDIDATES)
     min_bytes = str(min_size_mb * 1024 * 1024)
     cmd = [binary, "dup", "-d"] + paths + ["-m", min_bytes, "--json"]
     stdout, stderr, rc = await _run(cmd, timeout=600)

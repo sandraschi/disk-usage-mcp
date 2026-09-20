@@ -15,11 +15,22 @@ export function OnboardingCue() {
       return false;
     }
   });
+  const [checking, setChecking] = useState(false);
+
+  const recheck = async () => {
+    setChecking(true);
+    try {
+      setSetup(await getSetupStatus());
+    } catch {
+      /* backend unreachable - cue stays */
+    } finally {
+      setChecking(false);
+    }
+  };
 
   useEffect(() => {
-    getSetupStatus()
-      .then(setSetup)
-      .catch(() => {});
+    void recheck();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!setup || dismissed) return null;
@@ -46,6 +57,14 @@ export function OnboardingCue() {
         className="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-lg text-sm font-semibold text-white"
       >
         Open onboarding guide
+      </button>
+      <button
+        onClick={() => void recheck()}
+        disabled={checking}
+        data-testid="onboarding-recheck"
+        className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 rounded-lg text-sm font-medium text-zinc-200"
+      >
+        {checking ? "Checking..." : "Re-check"}
       </button>
       <button
         onClick={() => {
