@@ -4,9 +4,12 @@ import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Annotated
 
-from fastmcp import FastMCP
+from fastmcp import Context, FastMCP
+from fastmcp.tools import ToolResult
+from prefab_ui.app import PrefabApp
 from pydantic import Field
 
 from disk_usage_mcp.tools.disk_usage import disk_usage
@@ -24,13 +27,14 @@ mcp = FastMCP(
 )
 
 _READONLY = {"readOnlyHint": True}
+_OBJECT_SCHEMA: dict = {"type": "object", "required": ["success", "message"]}
 
-mcp.tool(name="scan_path", annotations=_READONLY)(scan_path)
-mcp.tool(name="find_large_files", annotations=_READONLY)(find_large_files)
-mcp.tool(name="get_drive_overview", annotations=_READONLY)(get_drive_overview)
-mcp.tool(name="find_duplicates", annotations=_READONLY)(find_duplicates)
-mcp.tool(name="disk_usage", annotations=_READONLY)(disk_usage)
-mcp.tool(name="parse_dj_database", annotations=_READONLY)(parse_dj_database)
+mcp.tool(name="scan_path", annotations=_READONLY, output_schema=_OBJECT_SCHEMA)(scan_path)
+mcp.tool(name="find_large_files", annotations=_READONLY, output_schema=_OBJECT_SCHEMA)(find_large_files)
+mcp.tool(name="get_drive_overview", annotations=_READONLY, output_schema=_OBJECT_SCHEMA)(get_drive_overview)
+mcp.tool(name="find_duplicates", annotations=_READONLY, output_schema=_OBJECT_SCHEMA)(find_duplicates)
+mcp.tool(name="disk_usage", annotations=_READONLY, output_schema=_OBJECT_SCHEMA)(disk_usage)
+mcp.tool(name="parse_dj_database", annotations=_READONLY, output_schema=_OBJECT_SCHEMA)(parse_dj_database)
 
 
 async def server_help(
@@ -62,7 +66,41 @@ async def server_help(
     }
 
 
-mcp.tool(name="server_help", annotations=_READONLY)(server_help)
+mcp.tool(name="server_help", annotations=_READONLY, output_schema=_OBJECT_SCHEMA)(server_help)
+
+
+@mcp.prompt(name="reclaim-plan", description="Plan a disk-space reclamation pass across drives.")
+def reclaim_plan_prompt(
+    drives: Annotated[str, Field(description="Comma-separated drive roots, e.g. D:\\,E:\\")] = "D:\\",
+    min_size_gb: Annotated[float, Field(description="Large-file threshold in GB")] = 5.0,
+) -> str:
+    """Build a step-by-step reclamation plan prompt for the agent."""
+    return (
+        f"Plan a disk-space reclamation pass over these drives: {drives}.\n"
+        "Steps:\n"
+        "1. Call get_drive_overview for the drives to rank them by usage.\n"
+        f"2. Call find_large_files on the fullest drive with min_size_gb={min_size_gb}.\n"
+        "3. Call find_duplicates across the drives (min_size_mb=100).\n"
+        "4. Summarize reclaimable space: large files total + duplicate groups total.\n"
+        "5. Recommend what to delete, move, or dedupe first. Never delete without asking."
+    )
+
+
+@mcp.prompt(name="snapshot-compare", description="Compare two snapshots to explain disk growth.")
+def snapshot_compare_prompt(
+    older: Annotated[str, Field(description="Older snapshot filename")] = "",
+    newer: Annotated[str, Field(description="Newer snapshot filename")] = "",
+) -> str:
+    """Build a snapshot-comparison prompt for the agent."""
+    return (
+        "Compare two disk-usage snapshots and explain what grew.\n"
+        f"Older: {older or '<pick from /api/snapshots>'}\n"
+        f"Newer: {newer or '<pick from /api/snapshots>'}\n"
+        "Steps:\n"
+        "1. Fetch both via GET /api/snapshot/{filename} (or the snapshots tool).\n"
+        "2. Use GET /api/snapshot/diff?from=<older>&to=<newer> for per-path deltas.\n"
+        "3. Report the top growers in GB and percent, and suggest causes."
+    )
 
 
 @mcp.resource("drive://list", name="drives", description="List available drives.")
@@ -87,6 +125,102 @@ async def list_drives() -> str:
         except Exception:
             continue
     return "\n".join(f"{d['drive']}: {d['used_gb']}/{d['total_gb']} GB ({d['percent_used']}%)" for d in drives)
+
+
+def _skills_dir() -> Path:
+    return Path(__file__).resolve().parent.parent.parent / "skills"
+
+
+def _read_skill(name: str) -> str | None:
+    if not name or "/" in name or "\\" in name or ".." in name:
+        return None
+    skill_file = _skills_dir() / name / "SKILL.md"
+    if not skill_file.is_file():
+        return None
+    return skill_file.read_text(encoding="utf-8")
+
+
+@mcp.resource("skill://disk-usage", name="skill-disk-usage", description="Disk usage analysis skill content.")
+async def skill_disk_usage() -> str:
+    """Serve the bundled disk-usage skill as an MCP resource."""
+    content = _read_skill("disk-usage")
+    return content or "Skill 'disk-usage' not found."
+
+
+@mcp.tool(app=True)
+async def show_drives_card(ctx: Context) -> ToolResult:
+    """Show available drives as a rich Prefab card.
+
+    ## Return Format
+    ToolResult with human-readable text + PrefabApp structured content.
+
+    ## Examples
+    await show_drives_card()
+    """
+    from prefab_ui.components import Card, CardContent, Column, Grid, Heading, Muted, Separator
+
+    drives_text = await list_drives()
+    rows = []
+    for line in drives_text.splitlines():
+        drive, _, rest = line.partition(":")
+        rows.append((drive.strip() + ":", rest.strip()))
+
+    with Column(gap=4, cssClass="p-4") as view:
+        Heading("Disk Usage - Drives")
+        Separator()
+        with Grid(columns=3, gap=3):
+            for drive, rest in rows:
+                with Card(), CardContent(cssClass="pt-4"):
+                    Muted(drive)
+                    Heading(rest)
+
+    await ctx.info(f"Rendered drives card with {len(rows)} drives")
+    return ToolResult(
+        content=f"Available drives ({len(rows)}):\n{drives_text}",
+        structured_content=PrefabApp(view=view, title="Disk Usage - Drives"),
+    )
+
+
+@mcp.tool(app=True)
+async def show_duplicates_card(
+    ctx: Context,
+    search_paths: Annotated[list[str], Field(description="Directories or drive roots to scan")] = [],
+    min_size_mb: Annotated[int, Field(description="Minimum file size in MB", ge=1)] = 100,
+) -> ToolResult:
+    """Show duplicate-file groups as a rich Prefab card.
+
+    ## Return Format
+    ToolResult with human-readable text + PrefabApp structured content.
+
+    ## Examples
+    await show_duplicates_card(search_paths=["D:\\", "E:\\"])
+    """
+    from prefab_ui.components import Card, CardContent, Column, Grid, Heading, Muted, Separator
+
+    if not search_paths:
+        return ToolResult(
+            content="No search paths given. Pass search_paths, e.g. ['D:\\', 'E:\\'].",
+            structured_content=PrefabApp(title="Duplicates - no input"),
+        )
+    result = await find_duplicates(search_paths=search_paths, min_size_mb=min_size_mb, ctx=ctx)
+    groups = result.get("duplicates", []) if result.get("success") else []
+
+    with Column(gap=4, cssClass="p-4") as view:
+        Heading(f"Duplicates - {len(groups)} groups")
+        Separator()
+        with Grid(columns=2, gap=3):
+            for group in groups[:12]:
+                files = group.get("files", [])
+                with Card(), CardContent(cssClass="pt-4"):
+                    Muted(f"{group.get('size_mb', 0)} MB x {len(files)}")
+                    Heading(str(files[0]) if files else "(no path)")
+
+    text = result.get("message", "Duplicate scan finished.")
+    if groups:
+        text += "\n" + "\n".join(
+            f"- {g.get('size_mb', 0)} MB: {', '.join(g.get('files', [])[:3])}" for g in groups[:10]
+        )
+    return ToolResult(content=text, structured_content=PrefabApp(view=view, title="Duplicates"))
 
 
 def build_app():

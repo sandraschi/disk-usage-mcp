@@ -23,6 +23,8 @@
     { "name": "find_duplicates", "description": "Find duplicate files using czkawka_cli across given paths" },
     { "name": "disk_usage", "description": "Portmanteau: scan (JSON tree), tree (human-readable), drive_overview (multi-drive)" },
     { "name": "parse_dj_database", "description": "Parse VirtualDJ/Serato DJ library database into track metadata" },
-    { "name": "server_help", "description": "List available tools and REST endpoints for this server" }
+    { "name": "server_help", "description": "List available tools and REST endpoints for this server" },
+    { "name": "show_drives_card", "description": "Prefab card: available drives with usage stats" },
+    { "name": "show_duplicates_card", "description": "Prefab card: duplicate-file groups across paths" }
   ]
 }
