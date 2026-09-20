@@ -17,6 +17,8 @@ htmlcov/
 target/
 native/target/
 native/gen/
+web_sota/test-results/
+web_sota/playwright-report/
 reports/
 *.egg-info
 src/*.egg-info/

@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
 import { RefreshCw, ScrollText } from "lucide-react";
+import { useEffect, useState } from "react";
 import { getLogs, type LogEntry } from "../lib/api";
 
 const LEVELS = ["", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"];
@@ -46,7 +46,9 @@ export default function Logs() {
           aria-label="Log level filter"
         >
           {LEVELS.map((l) => (
-            <option key={l} value={l}>{l || "All levels"}</option>
+            <option key={l} value={l}>
+              {l || "All levels"}
+            </option>
           ))}
         </select>
         <input
@@ -56,7 +58,10 @@ export default function Logs() {
           placeholder="Filter logs... (Enter to apply)"
           className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500"
         />
-        <button onClick={() => void refresh()} className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm text-zinc-200">
+        <button
+          onClick={() => void refresh()}
+          className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm text-zinc-200"
+        >
           Apply
         </button>
       </div>
@@ -69,18 +74,27 @@ export default function Logs() {
       {error && (
         <div className="text-center py-12" data-testid="logs-error">
           <p className="text-red-400 mb-2">{error}</p>
-          <button onClick={() => void refresh()} className="px-3 py-1.5 bg-zinc-800 rounded-lg text-sm">Retry</button>
+          <button onClick={() => void refresh()} className="px-3 py-1.5 bg-zinc-800 rounded-lg text-sm">
+            Retry
+          </button>
         </div>
       )}
       {!loading && !error && logs.length === 0 && (
-        <p className="text-center py-12 text-zinc-400" data-testid="logs-empty">No log entries match the current filter.</p>
+        <p className="text-center py-12 text-zinc-400" data-testid="logs-empty">
+          No log entries match the current filter.
+        </p>
       )}
       {!loading && !error && logs.length > 0 && (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 font-mono text-sm space-y-0.5" data-testid="logs-list">
+        <div
+          className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 font-mono text-sm space-y-0.5"
+          data-testid="logs-list"
+        >
           {logs.map((l, i) => (
             <div key={i} className="flex gap-2">
               <span className="text-zinc-500 flex-shrink-0">{l.ts}</span>
-              <span className={`flex-shrink-0 w-16 ${l.level === "ERROR" || l.level === "CRITICAL" ? "text-red-400" : l.level === "WARNING" ? "text-amber-400" : "text-zinc-400"}`}>
+              <span
+                className={`flex-shrink-0 w-16 ${l.level === "ERROR" || l.level === "CRITICAL" ? "text-red-400" : l.level === "WARNING" ? "text-amber-400" : "text-zinc-400"}`}
+              >
                 {l.level}
               </span>
               <span className="text-zinc-200 break-all">{l.message}</span>

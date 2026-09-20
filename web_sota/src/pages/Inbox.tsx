@@ -1,15 +1,23 @@
-import { useEffect, useState } from "react";
 import { Camera, GitCompare, Inbox as InboxIcon, RefreshCw, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import {
   deleteSnapshot,
   diffSnapshots,
   listSnapshots,
-  takeSnapshot,
   type SnapshotDiff,
   type SnapshotInfo,
+  takeSnapshot,
 } from "../lib/api";
 
-function PageState({ kind, message, onRetry }: { kind: "loading" | "error" | "empty"; message: string; onRetry?: () => void }) {
+function PageState({
+  kind,
+  message,
+  onRetry,
+}: {
+  kind: "loading" | "error" | "empty";
+  message: string;
+  onRetry?: () => void;
+}) {
   if (kind === "loading") {
     return (
       <div className="flex items-center justify-center py-12 text-zinc-300" data-testid="inbox-loading">
@@ -22,7 +30,10 @@ function PageState({ kind, message, onRetry }: { kind: "loading" | "error" | "em
       <div className="text-center py-12" data-testid="inbox-error">
         <p className="text-red-400 mb-2">{message}</p>
         {onRetry && (
-          <button onClick={onRetry} className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm text-zinc-200">
+          <button
+            onClick={onRetry}
+            className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm text-zinc-200"
+          >
             Retry
           </button>
         )}
@@ -69,7 +80,10 @@ export default function Inbox() {
   const handleTake = async () => {
     setTaking(true);
     try {
-      const pathList = paths.split(",").map((p) => p.trim()).filter(Boolean);
+      const pathList = paths
+        .split(",")
+        .map((p) => p.trim())
+        .filter(Boolean);
       await takeSnapshot(pathList, label);
       setLabel("");
       await refresh();
@@ -134,16 +148,30 @@ export default function Inbox() {
           <GitCompare className="h-4 w-4 text-amber-500" /> Compare snapshots
         </h3>
         <div className="flex flex-wrap gap-2">
-          <select value={diffFrom} onChange={(e) => setDiffFrom(e.target.value)} className="flex-1 min-w-[200px] bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100" aria-label="Older snapshot">
+          <select
+            value={diffFrom}
+            onChange={(e) => setDiffFrom(e.target.value)}
+            className="flex-1 min-w-[200px] bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100"
+            aria-label="Older snapshot"
+          >
             <option value="">Older snapshot...</option>
             {snapshots.map((s) => (
-              <option key={s.file} value={s.file}>{s.label || s.file} ({s.timestamp})</option>
+              <option key={s.file} value={s.file}>
+                {s.label || s.file} ({s.timestamp})
+              </option>
             ))}
           </select>
-          <select value={diffTo} onChange={(e) => setDiffTo(e.target.value)} className="flex-1 min-w-[200px] bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100" aria-label="Newer snapshot">
+          <select
+            value={diffTo}
+            onChange={(e) => setDiffTo(e.target.value)}
+            className="flex-1 min-w-[200px] bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100"
+            aria-label="Newer snapshot"
+          >
             <option value="">Newer snapshot...</option>
             {snapshots.map((s) => (
-              <option key={s.file} value={s.file}>{s.label || s.file} ({s.timestamp})</option>
+              <option key={s.file} value={s.file}>
+                {s.label || s.file} ({s.timestamp})
+              </option>
             ))}
           </select>
           <button
@@ -159,16 +187,17 @@ export default function Inbox() {
           <div className="text-sm">
             <p className="text-zinc-300 mb-2">
               Total change:{" "}
-              <span className={diff.total_delta_bytes! >= 0 ? "text-amber-400" : "text-green-400"}>
+              <span className={(diff.total_delta_bytes ?? 0) >= 0 ? "text-amber-400" : "text-green-400"}>
                 {diff.total_delta_gb} GB
               </span>
             </p>
             <ul className="space-y-1">
-              {diff.deltas!.map((d) => (
+              {diff.deltas?.map((d) => (
                 <li key={d.path} className="flex justify-between text-sm">
                   <span className="text-zinc-300">{d.path}</span>
                   <span className={d.delta_bytes >= 0 ? "text-amber-400" : "text-green-400"}>
-                    {d.delta_bytes >= 0 ? "+" : ""}{d.delta_gb} GB
+                    {d.delta_bytes >= 0 ? "+" : ""}
+                    {d.delta_gb} GB
                   </span>
                 </li>
               ))}
@@ -186,10 +215,15 @@ export default function Inbox() {
       ) : (
         <ul className="space-y-2" data-testid="snapshot-list">
           {snapshots.map((s) => (
-            <li key={s.file} className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3">
+            <li
+              key={s.file}
+              className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3"
+            >
               <div>
                 <p className="text-zinc-100">{s.label || s.file}</p>
-                <p className="text-sm text-zinc-400">{s.timestamp} · {s.paths.join(", ")}</p>
+                <p className="text-sm text-zinc-400">
+                  {s.timestamp} · {s.paths.join(", ")}
+                </p>
               </div>
               <button
                 onClick={() => void handleDelete(s.file)}

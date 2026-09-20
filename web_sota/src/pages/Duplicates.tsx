@@ -1,7 +1,7 @@
-import { useState } from "react";
 import { motion } from "framer-motion";
-import { Copy, Search, FolderOpen } from "lucide-react";
-import { findDuplicates, type DuplicateFile } from "../lib/api";
+import { Copy, FolderOpen, Search } from "lucide-react";
+import { useState } from "react";
+import { type DuplicateFile, findDuplicates } from "../lib/api";
 
 export default function Duplicates() {
   const [paths, setPaths] = useState("D:\\,E:\\");
@@ -15,7 +15,10 @@ export default function Duplicates() {
     setError("");
     setDuplicates([]);
     try {
-      const pathList = paths.split(",").map((p) => p.trim()).filter(Boolean);
+      const pathList = paths
+        .split(",")
+        .map((p) => p.trim())
+        .filter(Boolean);
       const result = await findDuplicates(pathList, minSize);
       if (result.success) {
         setDuplicates(result.duplicates || []);
@@ -73,16 +76,15 @@ export default function Duplicates() {
 
         {scanning && (
           <div className="flex items-center text-zinc-300 text-sm" data-testid="duplicates-loading">
-            <Search className="h-4 w-4 animate-spin mr-2" /> Scanning for duplicates — czkawka can take minutes on big trees...
+            <Search className="h-4 w-4 animate-spin mr-2" /> Scanning for duplicates — czkawka can take minutes on big
+            trees...
           </div>
         )}
 
         {duplicates.length > 0 && (
           <div className="text-sm text-zinc-400">
             Found {duplicates.length} groups — estimated reclaimable:{" "}
-            <span className="text-amber-400 font-semibold">
-              {(totalWaste / 1024).toFixed(1)} GB
-            </span>
+            <span className="text-amber-400 font-semibold">{(totalWaste / 1024).toFixed(1)} GB</span>
           </div>
         )}
       </div>
@@ -95,10 +97,7 @@ export default function Duplicates() {
           data-testid="duplicates-result"
         >
           {duplicates.slice(0, 50).map((group, i) => (
-            <div
-              key={group.hash || i}
-              className="bg-zinc-900 border border-zinc-800 rounded-xl p-4"
-            >
+            <div key={group.hash || i} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-zinc-300 font-mono truncate max-w-[300px]">
                   {group.hash || `group-${i}`}
@@ -115,9 +114,7 @@ export default function Duplicates() {
                   </li>
                 ))}
                 {group.files.length > 5 && (
-                  <li className="text-sm text-zinc-400">
-                    ...and {group.files.length - 5} more
-                  </li>
+                  <li className="text-sm text-zinc-400">...and {group.files.length - 5} more</li>
                 )}
               </ul>
             </div>
