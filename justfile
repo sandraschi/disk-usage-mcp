@@ -47,7 +47,7 @@ webapp-build:
 # MCPB pack (Claude Desktop bundle) - wipe+recopy so the bundle never goes stale
 mcpb-pack:
     powershell.exe -NoProfile -Command "if (Test-Path 'mcpb\\src') { Remove-Item -Recurse -Force 'mcpb\\src' }; New-Item -ItemType Directory -Force -Path 'mcpb\\src\\disk_usage_mcp' | Out-Null; Copy-Item -Recurse -Force 'src\\disk_usage_mcp\\*' 'mcpb\\src\\disk_usage_mcp\\'; Get-ChildItem -Recurse -Include '__pycache__','*.pyc','*.bak' -Path 'mcpb\\src' | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue"
-    mcpb pack . dist/disk-usage-mcp-v0.1.0.mcpb
+    bunx @anthropic-ai/mcpb pack . dist/disk-usage-mcp-v0.1.0.mcpb
 
 # Run tests
 test:

@@ -38,6 +38,28 @@ export default function Settings() {
         <p className="text-sm text-zinc-400">
           Local only — Ollama and LM Studio need no accounts, keys, or cloud calls.
         </p>
+        <div className="flex items-center gap-2">
+          <label htmlFor="llm-provider" className="text-sm text-zinc-300">
+            Provider:
+          </label>
+          <select
+            id="llm-provider"
+            value={selectedProvider}
+            onChange={(e) => {
+              const p = providers.find((x) => x.id === e.target.value);
+              if (p) select(p.id, p.models[0] ?? "");
+            }}
+            className="bg-zinc-800 border border-zinc-700 rounded-lg px-2 py-1.5 text-sm text-zinc-100"
+            data-testid="llm-provider-select"
+          >
+            {providers.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+                {p.detected ? "" : " (not detected)"}
+              </option>
+            ))}
+          </select>
+        </div>
         {probed && providers.length === 0 && (
           <p className="text-sm text-yellow-400">
             No providers answered. Start Ollama (<code>ollama serve</code>) or LM Studio.
