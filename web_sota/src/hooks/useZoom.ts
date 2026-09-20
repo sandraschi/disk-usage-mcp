@@ -40,6 +40,16 @@ export function useZoom() {
     setZoom((z) => ZOOM_LEVELS[Math.max(0, ZOOM_LEVELS.indexOf(z) - 1)]);
   }, []);
 
+  useEffect(() => {
+    const onZoom = (e: Event) => {
+      const dir = (e as CustomEvent<string>).detail;
+      if (dir === "in") zoomIn();
+      else if (dir === "out") zoomOut();
+    };
+    window.addEventListener("app-zoom", onZoom);
+    return () => window.removeEventListener("app-zoom", onZoom);
+  }, [zoomIn, zoomOut]);
+
   const reset = useCallback(() => setZoom(1.0), []);
 
   return { zoom, zoomIn, zoomOut, reset };
