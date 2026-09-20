@@ -1,5 +1,26 @@
 # Troubleshooting — disk-usage-mcp
 
+## `bun` is not recognized (stale shell PATH)
+
+Symptom: `bun run dev` (or any just recipe using bun) fails with
+"not recognized", even though `C:\Users\<you>\.bun\bin\bun.exe` exists.
+Cause: the terminal process started before bun's directory entered your PATH,
+so its inherited environment is stale — common for long-lived IDE terminals
+(Cursor/VS Code keep the env from app launch).
+
+Fix (pick one):
+1. Open a brand-new terminal tab/window (fresh processes inherit the current registry PATH).
+2. Or refresh the live shell without restarting it:
+   ```powershell
+   $env:PATH = [Environment]::GetEnvironmentVariable("PATH","User") + ";" + [Environment]::GetEnvironmentVariable("PATH","Machine")
+   ```
+3. Or restart the IDE so it re-reads the environment.
+
+Repo-side, the justfile prepends `%USERPROFILE%\.bun\bin` to PATH for every
+recipe (`export PATH := ...`), and `scripts/pre-commit-biome.ps1` resolves bun
+with a fallback — so `just tsc`, `just e2e`, `just certify` etc. work even from
+stale shells. Direct `bun ...` invocations in your own terminal still need fix 1 or 2.
+
 ## Dashboard shows Offline
 
 Backend not running. Run `.\start.ps1` (or `just mcp-http` for backend only).

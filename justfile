@@ -1,5 +1,9 @@
 set windows-shell := ["powershell.exe", "-NoProfile", "-Command"]
 
+# Prepend the canonical per-user bun dir for every recipe, so stale shells whose
+# PATH predates the bun install still work (same idea as build-native cargo).
+export PATH := env_var('USERPROFILE') + "\\.bun\\bin;" + env_var('PATH')
+
 # Start the full stack (backend + frontend)
 serve:
     powershell.exe -NoProfile -File "{{justfile_directory()}}\start.ps1"
