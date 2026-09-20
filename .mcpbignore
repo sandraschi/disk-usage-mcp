@@ -12,8 +12,12 @@ llms-full.txt
 .vscode/
 dist/
 build/
+target/
 *.mcpb
+*.bak
+*.bak.*
 web_sota/
+native/
 start.ps1
 start.bat
 justfile

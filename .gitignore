@@ -9,10 +9,14 @@ data/snapshots/
 dist/
 build/
 *.mcpb
+*.bak
+*.bak.*
 .ruff_cache/
 .pytest_cache/
 htmlcov/
 target/
+native/target/
+native/gen/
 reports/
 *.egg-info
 src/*.egg-info/

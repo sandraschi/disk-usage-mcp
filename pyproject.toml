@@ -36,8 +36,13 @@ target-version = "py313"
 line-length = 120
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "W", "UP"]
+select = ["E", "F", "I", "W", "UP", "T20"]
 ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*" = ["T20"]
+"scripts/**/*" = ["T20"]
+"run_server.py" = ["T20"]
 
 [tool.ruff.format]
 quote-style = "double"

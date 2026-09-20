@@ -21,6 +21,8 @@
     { "name": "find_large_files", "description": "Find files above a size threshold via deep dua tree walk" },
     { "name": "get_drive_overview", "description": "Aggregate disk usage across multiple drives at depth 1" },
     { "name": "find_duplicates", "description": "Find duplicate files using czkawka_cli across given paths" },
-    { "name": "disk_usage", "description": "Portmanteau: scan (JSON tree), tree (human-readable), drive_overview (multi-drive)" }
+    { "name": "disk_usage", "description": "Portmanteau: scan (JSON tree), tree (human-readable), drive_overview (multi-drive)" },
+    { "name": "parse_dj_database", "description": "Parse VirtualDJ/Serato DJ library database into track metadata" },
+    { "name": "server_help", "description": "List available tools and REST endpoints for this server" }
   ]
 }
