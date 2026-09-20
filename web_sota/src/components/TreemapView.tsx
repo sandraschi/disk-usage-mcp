@@ -187,7 +187,7 @@ export function TreemapView({ rootData, rootPathName = "Root" }: TreemapViewProp
                 <ChevronRight className="h-3.5 w-3.5 text-zinc-600" />
                 <button
                   onClick={() => jumpToHistory(index)}
-                  className={`px-2 py-1 rounded text-xs transition-colors ${
+                  className={`px-2 py-1 rounded text-sm transition-colors ${
                     index === history.length - 1
                       ? "bg-amber-500/20 text-amber-300 font-semibold border border-amber-500/30"
                       : "bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
@@ -204,7 +204,7 @@ export function TreemapView({ rootData, rootPathName = "Root" }: TreemapViewProp
           <button
             onClick={stepUp}
             disabled={history.length <= 1}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed text-xs text-zinc-300 transition-colors"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed text-sm text-zinc-200 transition-colors"
             title="Go up one folder"
           >
             <ArrowUp className="h-3.5 w-3.5" />
@@ -228,7 +228,7 @@ export function TreemapView({ rootData, rootPathName = "Root" }: TreemapViewProp
       </div>
 
       {/* WizTree Stats Banner */}
-      <div className="flex items-center justify-between px-1 text-xs text-zinc-400">
+      <div className="flex items-center justify-between px-1 text-sm text-zinc-300">
         <div className="flex items-center gap-4">
           <span>Active: <strong className="text-zinc-200">{currentNode.name}</strong></span>
           <span>Size: <strong className="text-amber-400">{formatBytes(totalCurrentSize)}</strong></span>
@@ -331,9 +331,9 @@ export function TreemapView({ rootData, rootPathName = "Root" }: TreemapViewProp
       </div>
 
       {/* WizTree Category Legend */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs text-zinc-400">
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-sm text-zinc-300">
         <div className="flex items-center gap-3 flex-wrap">
-          <span className="text-zinc-500 font-medium">Legend:</span>
+          <span className="text-zinc-400 font-medium">Legend:</span>
           <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: CATEGORY_COLORS.folder }}></span> Folder</span>
           <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: CATEGORY_COLORS.media }}></span> Media</span>
           <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: CATEGORY_COLORS.code }}></span> Code/Dev</span>

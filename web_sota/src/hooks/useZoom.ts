@@ -33,11 +33,11 @@ export function useZoom() {
   }, [zoom]);
 
   const zoomIn = useCallback(() => {
-    setZoom((z) => ZOOM_LEVELS[Math.min(ZOOM_LEVELS.length - 1, ZOOM_LEVELS.indexOf(z) + 1)]);
+    setZoom((z) => ZOOM_LEVELS[Math.min(ZOOM_LEVELS.length - 1, ZOOM_LEVELS.indexOf(z) + 1)] ?? 1.0);
   }, []);
 
   const zoomOut = useCallback(() => {
-    setZoom((z) => ZOOM_LEVELS[Math.max(0, ZOOM_LEVELS.indexOf(z) - 1)]);
+    setZoom((z) => ZOOM_LEVELS[Math.max(0, ZOOM_LEVELS.indexOf(z) - 1)] ?? 1.0);
   }, []);
 
   useEffect(() => {

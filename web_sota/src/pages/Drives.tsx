@@ -44,7 +44,7 @@ export default function Drives() {
     <div data-testid="drives-page" className="space-y-6">
       <h2 className="text-2xl font-bold text-zinc-100">Drive & Treemap Scanner</h2>
 
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 space-y-4">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 space-y-4" data-testid="drives-controls">
         <div className="flex gap-3 flex-wrap">
           <input
             type="text"
@@ -79,23 +79,37 @@ export default function Drives() {
           </button>
         </div>
 
-        {error && <p className="text-red-400 text-sm">{error}</p>}
+        {error && (
+          <p className="text-red-400 text-sm">
+            {error}{" "}
+            <button onClick={handleScan} className="underline hover:text-red-300">
+              Retry
+            </button>
+          </p>
+        )}
       </div>
+
+      {scanning && (
+        <div className="flex items-center justify-center py-12 text-zinc-300" data-testid="drives-loading">
+          <Scan className="h-6 w-6 animate-spin mr-2" /> Scanning {scanPathInput}...
+        </div>
+      )}
 
       {treeData && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
+          data-testid="drives-result"
         >
           <TreemapView rootData={treeData} rootPathName={scanPathInput} />
         </motion.div>
       )}
 
       {!treeData && !scanning && (
-        <div className="flex flex-col items-center justify-center py-16 text-zinc-500 bg-zinc-900/50 border border-zinc-800/80 rounded-xl">
+        <div className="flex flex-col items-center justify-center py-16 text-zinc-400 bg-zinc-900/50 border border-zinc-800/80 rounded-xl" data-testid="drives-empty">
           <HardDrive className="h-12 w-12 mb-4 text-amber-500/80" />
-          <p className="text-zinc-300 font-medium">Interactive Drill-down WizTree Treemap</p>
-          <p className="text-sm text-zinc-500 mt-1">Enter a drive path above and click Scan to analyze directory usage.</p>
+          <p className="text-zinc-200 font-medium">Interactive drill-down treemap</p>
+          <p className="text-sm text-zinc-400 mt-1">Enter a drive path above and click Scan to analyze directory usage.</p>
         </div>
       )}
     </div>

@@ -1,5 +1,4 @@
-import { NavLink } from "react-router-dom";
-import {
+import { NavLink } from "react-router-dom";import {
   BookOpen,
   CircleHelp,
   Copy,
@@ -15,11 +14,6 @@ import {
   ChevronRight,
   Monitor,
 } from "lucide-react";
-
-interface SidebarProps {
-  collapsed: boolean;
-  onToggle: () => void;
-}
 
 const navItems = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },

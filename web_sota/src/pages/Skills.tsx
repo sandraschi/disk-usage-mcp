@@ -13,7 +13,8 @@ export default function Skills() {
     listSkills()
       .then((data) => {
         setSkills(data.skills);
-        if (data.skills.length > 0) setActive(data.skills[0].name);
+        const first = data.skills[0];
+        if (first) setActive(first.name);
       })
       .catch((e: unknown) => setError(e instanceof Error ? e.message : "Failed"))
       .finally(() => setLoading(false));
