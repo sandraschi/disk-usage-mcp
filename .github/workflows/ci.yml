@@ -10,16 +10,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v3
-      - name: Lint
-        run: uv run ruff check src/ run_server.py
-      - name: Format check
-        run: uv run ruff format --check src/ run_server.py
-      - name: Tests
-        run: uv run pytest tests/ -q
       - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Lint
+        run: uv run ruff check src/ run_server.py tests/
+      - name: Format check
+        run: uv run ruff format --check src/ run_server.py tests/
+      - name: Typecheck (pyright)
+        run: uv run pyright src/
+      - name: Tests with coverage floor
+        run: uv run pytest tests/ -q --cov=src --cov-report=term-missing
       - name: Install webapp deps
         working-directory: web_sota
         run: bun install --frozen-lockfile
       - name: Typecheck webapp
         working-directory: web_sota
         run: bun run typecheck
+      - name: Lint webapp (biome)
+        working-directory: web_sota
+        run: bun run biome:ci
+      - name: Install Playwright browsers
+        working-directory: web_sota
+        run: bunx playwright install chromium --with-deps
+      - name: E2E nav walk
+        working-directory: web_sota
+        run: bun run e2e
+      - name: Validate MCPB manifest
+        run: bunx @anthropic-ai/mcpb validate .
