@@ -11,6 +11,15 @@ docs/
 .opencode/
 .cursorrules
 .windsurfrules
+.pre-commit-config.yaml
+.gitattributes
+reports/
+.assess-fix-timestamp
+mcpb/
+disk-usage-mcp-backend.spec
+SPEC_DJ_INTEGRATION.md
+fleet-start.config.ps1
+scripts/
 glama.json
 llms.txt
 llms-full.txt

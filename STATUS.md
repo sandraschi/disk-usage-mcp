@@ -35,8 +35,8 @@
 | **Model duplicate detection** | Cross-directory GGUF/safetensors dedup across Ollama/Pinokio/HF dirs | Not started |
 | **Scheduled snapshots** | Task Scheduler recipe exists in prompts; no installer yet | Not started |
 | **Prefab cards in chat clients** | Server side done; client rendering depends on host | Done (server) |
-| **CI on GitHub** | Workflow file ready locally; needs push with workflow scope | Blocked (scope) |
-| **MCPB smoke launch** | Pack + validate green; clean-env launch still manual | Not started |
+| **CI on GitHub** | Workflow file ready locally; push blocked — OAuth token lacks `workflow` scope, both SSH keys unauthorized on the account. Only a scoped push (Sandra) can land it | Blocked (scope) |
+| **MCPB smoke launch** | Proven 2026-09-21: bundle unpacked to clean dir, fresh venv + pip install, server booted — 9 tools + 2 prompts + drive resource + live scan all green | Done |
 
 ## Known Issues
 
