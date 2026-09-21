@@ -19,7 +19,7 @@
 | **Web dashboard** | 11 pages: Dashboard, Drives, Duplicates, Inbox, Tools, Skills, Chat, Logs, Apps, Settings, Help — shortcuts, zoom, modals, dark theme, a11y pass | Done |
 | **Session injection** | .claude-plugin + hooks, .cursorrules, .windsurfrules, copilot, opencode + antigravity skills | Done |
 | **Skills** | disk-usage SKILL.md served via resource + REST + page | Done |
-| **Testing** | 28 pytest (cov floor 40), tsc, Biome, Playwright e2e 4/4 | Done |
+| **Testing** | 33 pytest (cov 46%, floor 40), tsc, pyright, Biome, Playwright e2e 4/4 | Done |
 | **Lint** | ruff (T20) + format + pyright clean | Done |
 | **Git** | Committed, pushed (CI file local-only: needs workflow scope) | Done |
 | **Packaging** | 3-4-100 prompts, wipe+recopy pack recipe, pack + validate green | Done |

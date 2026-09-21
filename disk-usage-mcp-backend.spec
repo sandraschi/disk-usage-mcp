@@ -7,6 +7,8 @@ a = Analysis(
         'uvicorn.protocols', 'uvicorn.protocols.http', 'uvicorn.protocols.http.httptools_impl',
         'uvicorn.protocols.http.h11_impl', 'uvicorn.lifespan', 'uvicorn.lifespan.on',
         'cachetools', 'cachetools.keys', '_strptime', '_datetime',
+        # prefab_ui loads components dynamically (importlib) - PyInstaller cannot trace those
+        'prefab_ui', 'prefab_ui.app', 'prefab_ui.components',
     ],
     excludes=['tkinter', 'setuptools', 'pip', 'wheel', 'test', 'tests', 'unittest', '_distutils_hack'],
     noarchive=True,

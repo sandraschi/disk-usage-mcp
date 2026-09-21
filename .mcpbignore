@@ -3,7 +3,14 @@ node_modules/
 __pycache__/
 .ruff_cache/
 .pytest_cache/
+.coverage*
+*.tsbuildinfo
 tests/
+docs/
+.agents/
+.opencode/
+.cursorrules
+.windsurfrules
 glama.json
 llms.txt
 llms-full.txt

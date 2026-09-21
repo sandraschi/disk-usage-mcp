@@ -38,7 +38,7 @@ selection persist in localStorage.
 
 All tools return `{"success": bool, "message": str, ...}` plus payload keys.
 
-### scan_path
+### scan_path (dua 2.x: `aggregate` text tree parsed to JSON)
 
 ```
 scan_path(path="D:\\", max_depth=2)
