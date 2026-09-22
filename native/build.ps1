@@ -8,13 +8,20 @@ New-Item -ItemType Directory -Force -Path $ResourceDir, $DevDir | Out-Null
 
 Write-Host "=== ${RepoName} Tauri Release Build ===" -ForegroundColor Cyan
 
+# Naked `bun` inherits whatever PATH the invoking shell happened to have,
+# which can predate bun's installer PATH registration in an already-open
+# shell (BUG-045). Resolve a qualified path once instead.
+$bunExe = Join-Path $env:USERPROFILE ".bun\bin\bun.exe"
+if (-not (Test-Path $bunExe)) { $bunExe = (Get-Command bun -ErrorAction SilentlyContinue).Source }
+if (-not $bunExe) { throw "bun not found — install from https://bun.sh" }
+
 # Step 1: Frontend build
 $frontend = Join-Path $Root "web_sota"
 if (Test-Path "$frontend\package.json") {
     Write-Host "-> [1/4] Building frontend..." -ForegroundColor Yellow
     Push-Location $frontend
-    bun install 2>$null
-    bun run build
+    & $bunExe install 2>$null
+    & $bunExe run build
     if ($LASTEXITCODE -ne 0) { throw "Frontend build failed" }
     Pop-Location
 }
