@@ -90,6 +90,31 @@ server_help(topic="snapshots")
 → {"success": true, "message": "...", "tools": [...], "endpoints": [...]}
 ```
 
+### list_connected_drives
+
+```
+list_connected_drives()
+→ {"success": true, "message": "12 drives connected, 8 at >=90% full", "drives": [{"drive": "D:\\", "kind": "fixed", "total_gb": ..., "percent_used": ...}]}
+```
+
+### cloud_status
+
+```
+cloud_status()
+→ {"success": true, "onedrive": {"configured": ..., "local_path": ...}, "google": {...}}
+```
+
+### verify_folders_with_bc (Beyond Compare crossconnect)
+
+```
+verify_folders_with_bc(left_path="D:\\Media", right_path="E:\\Media")
+→ {"success": true, "reachable": true, "tool": "compare_folders", "data": {...}}
+→ {"success": false, "reachable": false, "message": "beyondcompare-mcp not reachable at ..."} (peer down)
+```
+
+Division of labour: disk-usage suspects (dua trees, czkawka hash groups), BC confirms
+(byte-level). A hash match is a candidate list, never a deletion verdict.
+
 ### show_drives_card / show_duplicates_card (Prefab, app=True)
 
 ```
@@ -114,7 +139,7 @@ show_duplicates_card(search_paths=["D:\\", "E:\\"], min_size_mb=100)
 
 ## Best Practices
 
-1. Start with `get_drive_overview` to see drive-level allocation
+1. Start with `list_connected_drives` to see what is actually plugged in (BYOD rotation!)
 2. Drill into specific drives with `scan_path` at depth 2-3
 3. Use `find_large_files` with min_size_gb=10+ for quick space recovery
 4. Run `find_duplicates` across backup drives last (slowest operation)

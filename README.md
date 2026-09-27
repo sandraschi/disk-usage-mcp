@@ -48,10 +48,29 @@ uv run python src/disk_usage_mcp/server.py
 |----------|--------|-------------|
 | `/api/health` | GET | Server health |
 | `/api/v1/diagnostics` | GET | Diagnostics for smoke tests |
+| `/api/drives` | GET | All connected drives + stats (no scanner needed) |
+| `/api/cloud/status` | GET | OneDrive + Google sync-folder state |
+| `/api/peers/status` | GET | Companion reachability (beyondcompare, google-docs, multi-backup) |
+| `/api/peers/bc/compare` | POST | Beyond Compare folder verdict via proxy |
 | `/api/scan` | POST | Scan a path with optional depth |
 | `/api/snapshot/take` | POST | Take a usage snapshot |
 | `/api/snapshots` | GET | List saved snapshots |
 | `/api/snapshot/{file}` | GET | Get snapshot data |
+
+## Fleet Crossconnects (Companions)
+
+`disk-usage-mcp` works completely standalone. You can optionally connect it with companion
+servers in the `sandraschi` fleet to unlock extended features:
+
+| Companion Server | Feature Unlocked | Status | Setup |
+|---|---|---|---|
+| [`beyondcompare-mcp`](https://github.com/sandraschi/beyondcompare-mcp) | Authoritative folder-compare verdicts before delete/quarantine (WIRED: Duplicates verify panel, `verify_folders_with_bc`, `/api/peers/*`) | Optional | [Install Guide](https://github.com/sandraschi/beyondcompare-mcp/blob/main/INSTALL.md) |
+| [`google-docs-mcp`](https://github.com/sandraschi/google-docs-mcp) | Real Drive quota + sync state on the Cloud page (PLANNED: dialogic "not wired yet" until then) | Optional | [Install Guide](https://github.com/sandraschi/google-docs-mcp/blob/main/INSTALL.md) |
+| [`multi-backup-mcp`](https://github.com/sandraschi/multi-backup-mcp) | Backup preflight: target plugged in? room for N GB? (PLANNED) | Optional | [Install Guide](https://github.com/sandraschi/multi-backup-mcp/blob/main/INSTALL.md) |
+
+> **Division of labour:** disk-usage suspects (dua trees, czkawka hash groups), Beyond Compare
+> confirms (byte-level). A hash match is a candidate list, never a deletion verdict.
+> All companions degrade to gray badges + actionable messages when down — never a 500.
 
 ## Stack
 

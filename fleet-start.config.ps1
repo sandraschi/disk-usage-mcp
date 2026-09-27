@@ -8,7 +8,7 @@
     WebRoot      = 'web_sota'
     Backend = @{
         Kind          = 'uvicorn-web-app'
-        UvicornTarget = 'disk_usage_mcp.http_app:app'
+        UvicornTarget = 'disk_usage_mcp.server:app'
         SyncExtras    = @('dev')
         Env           = @{ WEB_PORT = '11114' }
     }

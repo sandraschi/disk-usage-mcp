@@ -37,6 +37,49 @@ mcp.tool(name="disk_usage", annotations=_READONLY, output_schema=_OBJECT_SCHEMA)
 mcp.tool(name="parse_dj_database", annotations=_READONLY, output_schema=_OBJECT_SCHEMA)(parse_dj_database)
 
 
+async def list_connected_drives() -> dict:
+    """List all currently connected drives with usage stats (no scanner needed).
+
+    ## Return Format
+    {"success": bool, "message": str, "drives": [{"drive": "D:\\\\", "kind": "fixed", "total_gb": ..., "percent_used": ...}]}
+
+    ## Examples
+    await list_connected_drives()
+    """
+    from disk_usage_mcp.drives import list_connected_drives as _list
+
+    try:
+        items = _list()
+        full = sum(1 for d in items if d.get("reachable") and d.get("percent_used", 0) >= 90)
+        return {
+            "success": True,
+            "message": f"{len(items)} drives connected, {full} at >=90% full",
+            "drives": items,
+        }
+    except Exception as e:
+        logger.exception("list_connected_drives failed")
+        return {"success": False, "message": str(e), "error": str(e), "drives": []}
+
+
+async def cloud_status() -> dict:
+    """OneDrive + Google Drive sync-folder status (local detection, no OAuth).
+
+    ## Return Format
+    {"success": bool, "message": str, "onedrive": {...}, "google": {...}}
+
+    ## Examples
+    await cloud_status()
+    """
+    from disk_usage_mcp.drives import cloud_status as _cloud
+
+    try:
+        state = _cloud()
+        return {"success": True, "message": "Cloud sync-folder status", **state}
+    except Exception as e:
+        logger.exception("cloud_status failed")
+        return {"success": False, "message": str(e), "error": str(e)}
+
+
 async def server_help(
     topic: Annotated[str | None, Field(description="Optional topic: tools, rest, snapshots, dj")] = None,
 ) -> dict:
@@ -67,6 +110,36 @@ async def server_help(
 
 
 mcp.tool(name="server_help", annotations=_READONLY, output_schema=_OBJECT_SCHEMA)(server_help)
+mcp.tool(name="list_connected_drives", annotations=_READONLY, output_schema=_OBJECT_SCHEMA)(list_connected_drives)
+mcp.tool(name="cloud_status", annotations=_READONLY, output_schema=_OBJECT_SCHEMA)(cloud_status)
+
+
+async def verify_folders_with_bc(
+    left_path: Annotated[str, Field(description="Left folder to compare (must exist locally)")],
+    right_path: Annotated[str, Field(description="Right folder to compare (must exist locally)")],
+    include_subfolders: Annotated[bool, Field(description="Recurse into subfolders")] = True,
+) -> dict:
+    """Ask Beyond Compare for the authoritative verdict on two folders.
+
+    disk-usage suspects (dua trees, czkawka hash groups); BC confirms
+    byte-level. Soft-degrades when beyondcompare-mcp is not running.
+
+    ## Return Format
+    {"success": bool, "message": str, "reachable": bool, "data": {...}}
+
+    ## Examples
+    await verify_folders_with_bc(left_path="D:\\\\Media", right_path="E:\\\\Media")
+    """
+    from disk_usage_mcp.services.bc_crossconnect import bc_compare_folders
+
+    try:
+        return await bc_compare_folders(left_path, right_path, include_subfolders)
+    except Exception as e:
+        logger.exception("verify_folders_with_bc failed")
+        return {"success": False, "message": str(e), "error": str(e)}
+
+
+mcp.tool(name="verify_folders_with_bc", annotations=_READONLY, output_schema=_OBJECT_SCHEMA)(verify_folders_with_bc)
 
 
 @mcp.prompt(name="reclaim-plan", description="Plan a disk-space reclamation pass across drives.")
@@ -230,9 +303,17 @@ def build_app():
     ``/mcp`` (avoids the BUG-008 double prefix) with the sub-app lifespan
     entered inside the parent lifespan (BUG-038), preserving http_app's own
     lifespan (snapshot-dir init).
+
+    Idempotent: the fleet launcher imports ``disk_usage_mcp.server:app``
+    (module level below) while ``main()`` calls ``build_app()`` again in the
+    MCP_PORT path — the second call must not stack a duplicate /mcp mount.
     """
     from disk_usage_mcp.http_app import app as fastapi_app
     from disk_usage_mcp.http_app import lifespan as http_lifespan
+
+    for route in fastapi_app.routes:
+        if getattr(route, "path", "") == "/mcp":
+            return fastapi_app  # already mounted
 
     mcp_http = mcp.http_app(path="/")
 
@@ -245,6 +326,12 @@ def build_app():
     fastapi_app.router.lifespan_context = combined_lifespan
     fastapi_app.mount("/mcp", app=mcp_http)
     return fastapi_app
+
+
+# Module-level app for the fleet launcher (UvicornTarget disk_usage_mcp.server:app).
+# The raw ``disk_usage_mcp.http_app:app`` has NO /mcp mount — serving it directly
+# is exactly how HTTP MCP silently 404s in production while working in smoke tests.
+app = build_app()
 
 
 def main():

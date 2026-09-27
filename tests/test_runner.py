@@ -7,9 +7,12 @@ from disk_usage_mcp.runner import _resolve_binary, _run
 
 @pytest.mark.asyncio
 async def test_run_no_binary_graceful():
-    """Running a non-existent command should raise FileNotFoundError on Windows."""
-    with pytest.raises(FileNotFoundError):
-        await _run(["non_existent_command_xyz"])
+    """Missing binary returns (\"\", message, 127) instead of raising - no more HTTP 500s."""
+    stdout, stderr, rc = await _run(["non_existent_command_xyz"])
+    assert stdout == ""
+    assert rc == 127
+    assert "not found" in stderr.lower()
+    assert "winget" in stderr.lower()
 
 
 def test_resolve_binary_unknown():

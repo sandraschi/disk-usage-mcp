@@ -24,6 +24,9 @@
     { "name": "disk_usage", "description": "Portmanteau: scan (JSON tree), tree (human-readable), drive_overview (multi-drive)" },
     { "name": "parse_dj_database", "description": "Parse VirtualDJ/Serato DJ library database into track metadata" },
     { "name": "server_help", "description": "List available tools and REST endpoints for this server" },
+    { "name": "list_connected_drives", "description": "List all connected drives with usage stats (no scanner needed)" },
+    { "name": "cloud_status", "description": "OneDrive + Google Drive sync-folder status (local detection)" },
+    { "name": "verify_folders_with_bc", "description": "Authoritative Beyond Compare folder verdict (soft-degrades when peer down)" },
     { "name": "show_drives_card", "description": "Prefab card: available drives with usage stats" },
     { "name": "show_duplicates_card", "description": "Prefab card: duplicate-file groups across paths" }
   ]

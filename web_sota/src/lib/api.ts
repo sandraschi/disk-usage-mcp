@@ -37,6 +37,43 @@ export interface DriveData {
   error?: string;
 }
 
+export interface ConnectedDrive {
+  drive: string;
+  reachable: boolean;
+  label?: string;
+  kind?: string;
+  total_gb?: number;
+  used_gb?: number;
+  free_gb?: number;
+  percent_used?: number;
+  error?: string;
+}
+
+export interface DrivesResponse {
+  success: boolean;
+  message?: string;
+  drives: ConnectedDrive[];
+  error?: string;
+}
+
+export interface CloudProviderState {
+  configured: boolean;
+  local_path: string;
+  exists?: boolean;
+  host_drive?: string;
+  host_free_gb?: number;
+  volume_label?: string;
+  note: string;
+}
+
+export interface CloudStatusResponse {
+  success: boolean;
+  message?: string;
+  onedrive: CloudProviderState;
+  google: CloudProviderState;
+  error?: string;
+}
+
 export interface ScanResponse {
   success: boolean;
   message?: string;
@@ -186,6 +223,53 @@ export function getSetupStatus(): Promise<SetupStatus> {
 
 export function getFleetApps(probe = false): Promise<{ apps: FleetApp[]; source: string; probed: boolean }> {
   return apiFetch(`/api/fleet/apps${probe ? "?probe=true" : ""}`);
+}
+
+export function getDrives(): Promise<DrivesResponse> {
+  return apiFetch<DrivesResponse>("/api/drives");
+}
+
+export interface PeerState {
+  reachable: boolean;
+  message: string;
+  tools?: string[];
+  base_url?: string;
+  health_path?: string;
+  repo_url?: string;
+}
+
+export interface PeersStatusResponse {
+  success: boolean;
+  message?: string;
+  peers: Record<string, PeerState>;
+}
+
+export interface BcCompareResponse {
+  success: boolean;
+  message?: string;
+  reachable?: boolean;
+  tool?: string;
+  data?: unknown;
+  error?: string;
+}
+
+export function getPeersStatus(): Promise<PeersStatusResponse> {
+  return apiFetch<PeersStatusResponse>("/api/peers/status");
+}
+
+export function bcCompareFolders(
+  leftPath: string,
+  rightPath: string,
+  includeSubfolders = true,
+): Promise<BcCompareResponse> {
+  return apiFetch<BcCompareResponse>("/api/peers/bc/compare", {
+    method: "POST",
+    body: JSON.stringify({ left_path: leftPath, right_path: rightPath, include_subfolders: includeSubfolders }),
+  });
+}
+
+export function getCloudStatus(): Promise<CloudStatusResponse> {
+  return apiFetch<CloudStatusResponse>("/api/cloud/status");
 }
 
 export function scanPath(path: string, maxDepth = 3): Promise<ScanResponse> {

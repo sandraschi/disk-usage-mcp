@@ -3,6 +3,7 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleHelp,
+  Cloud,
   Copy,
   HardDrive,
   Inbox,
@@ -19,6 +20,7 @@ import { NavLink } from "react-router-dom";
 const navItems = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/drives", icon: HardDrive, label: "Drives" },
+  { to: "/cloud", icon: Cloud, label: "Cloud" },
   { to: "/duplicates", icon: Copy, label: "Duplicates" },
   { to: "/inbox", icon: Inbox, label: "Inbox" },
   { to: "/tools", icon: Wrench, label: "Tools" },

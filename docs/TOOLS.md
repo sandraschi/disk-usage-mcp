@@ -14,6 +14,9 @@ All MCP tools return dialogic `{success, message, ...}` and carry
 | `disk_usage(operation, ...)` | Portmanteau: `scan` / `tree` / `drive_overview` |
 | `parse_dj_database(path?)` | VirtualDJ database.xml / Serato database-v2 track metadata |
 | `server_help(topic?)` | Tool + live REST route listing |
+| `list_connected_drives()` | All connected drives + stats (no scanner needed) |
+| `cloud_status()` | OneDrive + Google sync-folder state (local detection, no OAuth) |
+| `verify_folders_with_bc(left, right)` | BC authoritative verdict (soft-degrades when peer down) |
 | `show_drives_card()` | Prefab in-chat drives card (`app=True`) |
 | `show_duplicates_card(search_paths, min_size_mb)` | Prefab in-chat duplicates card (`app=True`) |
 
@@ -29,14 +32,16 @@ All MCP tools return dialogic `{success, message, ...}` and carry
 
 ## REST (see Capabilities for the live map)
 
-Health/status/capabilities/skills/logs/setup/fleet; scan/duplicates/large-files;
+Health/status/capabilities/skills/logs/setup/fleet; drives (connected list); cloud/status (OneDrive+Google);
+peers/status (companion reachability); peers/bc/compare (BC folder verdict proxy);
+scan/duplicates/large-files; snapshot take/list/get/diff/delete;
 snapshot take/list/get/diff/delete; local LLM discover/providers/models/chat/stream;
 `/api/v1/diagnostics`; `POST /api/shutdown` (orderly exit for the fleet launcher);
 `/mcp` (MCP streamable HTTP, mounted with `path="/"`).
 
 ## Dashboard
 
-Pages: Dashboard (hero + KPIs + onboarding cue), Drives (treemap), Duplicates,
-Inbox (snapshots take/diff/delete), Tools (capability runner), Skills, Chat
+Pages: Dashboard (hero + KPIs + onboarding cue), Drives (connected overview + treemap), Cloud
+(OneDrive + Google sync state), Duplicates (with safety rule + BC verify panel), Inbox (snapshots take/diff/delete), Tools (capability runner), Skills, Chat
 (skill-first, 5 personalities, streaming, 100-msg localStorage, export),
 Logs, Apps (fleet hub), Settings (local LLM), Help (onboarding + endpoints).

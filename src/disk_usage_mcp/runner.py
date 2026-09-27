@@ -33,11 +33,24 @@ def _resolve_binary(name: str, fallbacks: tuple[str, ...] = ()) -> str:
 
 async def _run(cmd: list[str], timeout: int = 120) -> tuple[str, str, int]:
     """Run a subprocess asynchronously and return (stdout, stderr, returncode)."""
-    proc = await asyncio.create_subprocess_exec(
-        *cmd,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+    except FileNotFoundError:
+        msg = (
+            f"Scanner binary not found: {cmd[0]}. "
+            "Install prerequisites (winget install Byron.dua-cli; "
+            "winget install qarmin.czkawka.cli) - see docs/ONBOARDING.md"
+        )
+        logger.warning(msg)
+        return "", msg, 127
+    except OSError as e:
+        msg = f"Failed to launch {' '.join(cmd)}: {e}"
+        logger.exception(msg)
+        return "", msg, 127
     try:
         stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=timeout)
         return stdout.decode("utf-8", errors="replace"), stderr.decode("utf-8", errors="replace"), proc.returncode or 0
@@ -86,25 +99,39 @@ def _parse_dua_tree(output: str, root_name: str) -> dict:
 
 async def run_dua(path: str, max_depth: int = 3) -> dict:
     """Run dua 2.x aggregate and return the parsed hierarchy."""
+    import os as _os
+
+    if not path or not _os.path.exists(path):
+        return {"success": False, "message": f"Path not found: {path}", "error": f"Path not found: {path}"}
     binary = _resolve_binary("dua")
     cmd = [binary, "aggregate", "--format", "bytes", "-d", str(max_depth), path]
     stdout, stderr, rc = await _run(cmd, timeout=300)
     if rc != 0:
-        return {"success": False, "error": stderr.strip() or f"dua exited with code {rc}"}
+        err = stderr.strip() or f"dua exited with code {rc}"
+        return {"success": False, "message": err, "error": err}
     try:
-        return {"success": True, "data": _parse_dua_tree(stdout, path)}
+        return {"success": True, "message": f"Scanned {path}", "data": _parse_dua_tree(stdout, path)}
     except Exception as e:
-        return {"success": False, "error": f"Failed to parse dua output: {e}"}
+        return {
+            "success": False,
+            "message": f"Failed to parse dua output: {e}",
+            "error": f"Failed to parse dua output: {e}",
+        }
 
 
 async def run_dua_tree(path: str, max_depth: int = 3) -> dict:
     """Run dua 2.x aggregate with human-readable tree output."""
+    import os as _os
+
+    if not path or not _os.path.exists(path):
+        return {"success": False, "message": f"Path not found: {path}", "error": f"Path not found: {path}"}
     binary = _resolve_binary("dua")
     cmd = [binary, "aggregate", "-d", str(max_depth), path]
     stdout, stderr, rc = await _run(cmd, timeout=300)
     if rc != 0:
-        return {"success": False, "error": stderr.strip() or f"dua exited with code {rc}"}
-    return {"success": True, "output": stdout}
+        err = stderr.strip() or f"dua exited with code {rc}"
+        return {"success": False, "message": err, "error": err}
+    return {"success": True, "message": f"Tree for {path} at depth {max_depth}", "output": stdout}
 
 
 def _normalize_czkawka_json(data: dict) -> list[dict]:
@@ -143,14 +170,21 @@ async def run_czkawka_dups(paths: list[str], min_size_mb: int = 100) -> dict:
         except (json.JSONDecodeError, OSError) as e:
             # No usable result file: now the exit code matters.
             if rc != 0:
-                return {"success": False, "error": stderr.strip() or f"czkawka exited with code {rc}"}
-            return {"success": False, "error": f"Failed to read czkawka result file: {e}"}
+                err = stderr.strip() or f"czkawka exited with code {rc}"
+                return {"success": False, "message": err, "error": err}
+            err = f"Failed to read czkawka result file: {e}"
+            return {"success": False, "message": err, "error": err}
         if rc not in (0, 11):
             # czkawka 12 uses non-zero status codes on success (e.g. 11 = hits found).
             logger.debug("czkawka exited with status %s; result file parsed OK", rc)
         files = _normalize_czkawka_json(data)
         total_size = sum(g["size"] for g in files)
-        return {"success": True, "files": files, "total_size": total_size}
+        return {
+            "success": True,
+            "message": f"Found {len(files)} duplicate groups",
+            "files": files,
+            "total_size": total_size,
+        }
     finally:
         try:
             Path(tmp_path).unlink(missing_ok=True)
@@ -160,9 +194,14 @@ async def run_czkawka_dups(paths: list[str], min_size_mb: int = 100) -> dict:
 
 async def run_find_large(path: str, min_size_gb: float = 1.0, limit: int = 50) -> dict:
     """Find large files using a fast filesystem traversal (dua or direct)."""
+    import os as _os
+
+    if not path or not _os.path.exists(path):
+        return {"success": False, "message": f"Path not found: {path}", "error": f"Path not found: {path}"}
     binary = _resolve_binary("dua")
     cmd = [binary, "aggregate", "--format", "bytes", "-d", "1", path]
     stdout, stderr, rc = await _run(cmd, timeout=120)
     if rc != 0:
-        return {"success": False, "error": stderr.strip() or f"dua exited with code {rc}"}
-    return {"success": True, "raw": stdout}
+        err = stderr.strip() or f"dua exited with code {rc}"
+        return {"success": False, "message": err, "error": err}
+    return {"success": True, "message": f"Scanned {path} for large files", "raw": stdout}

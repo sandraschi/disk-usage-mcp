@@ -10,9 +10,9 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 import httpx
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from disk_usage_mcp.config import BACKEND_PORT, CZKAWKA_BIN, DUA_BIN, SNAPSHOTS_DIR
@@ -56,6 +56,12 @@ TOOL_DEFS = [
     },
     {"name": "parse_dj_database", "description": "Parse VirtualDJ/Serato DJ library database into track metadata"},
     {"name": "server_help", "description": "List available tools and REST endpoints for this server"},
+    {"name": "list_connected_drives", "description": "List all connected drives with usage stats (no scanner needed)"},
+    {"name": "cloud_status", "description": "OneDrive + Google Drive sync-folder status (local detection)"},
+    {
+        "name": "verify_folders_with_bc",
+        "description": "Authoritative Beyond Compare folder verdict (disk-usage suspects, BC confirms)",
+    },
     {"name": "show_drives_card", "description": "Prefab card: available drives with usage stats"},
     {"name": "show_duplicates_card", "description": "Prefab card: duplicate-file groups across paths"},
 ]
@@ -80,6 +86,12 @@ class LargeFilesRequest(BaseModel):
     path: str
     min_size_gb: float = Field(default=1.0, ge=0.1)
     limit: int = Field(default=50, ge=1, le=500)
+
+
+class BcCompareRequest(BaseModel):
+    left_path: str
+    right_path: str
+    include_subfolders: bool = True
 
 
 class LlmChatRequest(BaseModel):
@@ -136,6 +148,17 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+
+@app.exception_handler(Exception)
+async def _unhandled_to_json(request: Request, exc: Exception):
+    """Never 500: scanner failures (missing dua/czkawka, bad paths) return JSON."""
+    logger.exception("Unhandled error on %s: %s", request.url.path, exc)
+    return JSONResponse(
+        status_code=200,
+        content={"success": False, "message": str(exc) or "Internal error", "error": str(exc) or "Internal error"},
+    )
+
 
 _tauri = os.environ.get("DISK_USAGE_TAURI", "").lower() in ("1", "true", "yes")
 app.add_middleware(
@@ -194,6 +217,100 @@ async def status():
     }
 
 
+@app.get("/api/drives")
+async def drives():
+    """All currently connected drives with usage stats. Works without dua/czkawka."""
+    from disk_usage_mcp.drives import list_connected_drives
+
+    try:
+        items = list_connected_drives()
+        full = sum(1 for d in items if d.get("reachable") and d.get("percent_used", 0) >= 90)
+        return {
+            "success": True,
+            "message": f"{len(items)} drives connected, {full} at >=90% full",
+            "drives": items,
+        }
+    except Exception as e:
+        logger.exception("Drive enumeration failed")
+        return {"success": False, "message": str(e), "error": str(e), "drives": []}
+
+
+@app.get("/api/cloud/status")
+async def cloud():
+    """OneDrive + Google Drive sync-folder status (local detection, no OAuth)."""
+    from disk_usage_mcp.drives import cloud_status as _cloud_status
+
+    try:
+        state = _cloud_status()
+        return {"success": True, "message": "Cloud sync-folder status", **state}
+    except Exception as e:
+        logger.exception("Cloud status failed")
+        return {"success": False, "message": str(e), "error": str(e)}
+
+
+# --- Fleet peer crossconnects (1-hop, soft-degradation) ---------------------
+
+_PEERS = {
+    # name: (base_url_env, default_url, health_paths to try in order)
+    "beyondcompare": ("BEYONDCOMPARE_MCP_URL", "http://127.0.0.1:10841", ["/api/v1/health"]),
+    "google-docs": ("GOOGLE_DOCS_MCP_URL", "http://127.0.0.1:11972", ["/api/health", "/health"]),
+    "multi-backup": ("MULTI_BACKUP_MCP_URL", "http://127.0.0.1:10799", ["/api/health", "/health"]),
+}
+
+
+async def _probe_rest_peer(name: str, base_url: str, paths: list[str]) -> dict:
+    """Quick REST health probe for peers with an HTTP health endpoint."""
+    for path in paths:
+        try:
+            async with httpx.AsyncClient(timeout=3.0) as client:
+                resp = await client.get(f"{base_url.rstrip('/')}{path}")
+                if resp.status_code == 200:
+                    return {"reachable": True, "health_path": path}
+        except Exception:
+            continue
+    return {"reachable": False, "health_path": ""}
+
+
+@app.get("/api/peers/status")
+async def peers_status():
+    """1-hop peer dashboard: BC via MCP probe, REST peers via health endpoints."""
+    from disk_usage_mcp.services.bc_crossconnect import BC_REPO_URL, bc_status
+
+    peers: dict = {}
+    bc = await bc_status()
+    peers["beyondcompare"] = {
+        "reachable": bc.get("reachable", False),
+        "tools": bc.get("tools", []),
+        "message": bc.get("message", ""),
+        "repo_url": BC_REPO_URL,
+    }
+    for name, (env_var, default_url, paths) in _PEERS.items():
+        if name == "beyondcompare":
+            continue
+        base_url = os.getenv(env_var, default_url)
+        probe = await _probe_rest_peer(name, base_url, paths)
+        peers[name] = {
+            **probe,
+            "base_url": base_url,
+            "repo_url": f"https://github.com/sandraschi/{name}-mcp",
+            "message": "reachable" if probe["reachable"] else f"not running at {base_url} (optional companion)",
+        }
+    up = sum(1 for p in peers.values() if p.get("reachable"))
+    return {"success": True, "message": f"{up}/{len(peers)} peers reachable", "peers": peers}
+
+
+@app.post("/api/peers/bc/compare")
+async def peers_bc_compare(body: BcCompareRequest):
+    """Proxy: authoritative Beyond Compare folder verdict. Never 500s."""
+    from disk_usage_mcp.services.bc_crossconnect import bc_compare_folders
+
+    try:
+        return await bc_compare_folders(body.left_path, body.right_path, body.include_subfolders)
+    except Exception as e:
+        logger.exception("BC compare proxy failed")
+        return {"success": False, "message": str(e), "error": str(e)}
+
+
 @app.get("/api/capabilities")
 async def capabilities():
     return {
@@ -210,6 +327,10 @@ async def capabilities():
             "/api/logs",
             "/api/setup/status",
             "/api/fleet/apps",
+            "/api/drives",
+            "/api/cloud/status",
+            "/api/peers/status",
+            "/api/peers/bc/compare",
             "/api/scan",
             "/api/duplicates",
             "/api/large-files",
@@ -264,48 +385,67 @@ async def diagnostics():
 
 @app.post("/api/scan")
 async def scan(body: ScanRequest):
-    result = await run_dua(body.path, body.max_depth)
-    return result
+    try:
+        return await run_dua(body.path, body.max_depth)
+    except Exception as e:
+        logger.exception("Scan failed for %s", body.path)
+        return {"success": False, "message": str(e), "error": str(e)}
 
 
 @app.post("/api/duplicates")
 async def duplicates(body: DuplicatesRequest):
     from disk_usage_mcp.tools.duplicates import find_duplicates
 
-    return await find_duplicates(search_paths=body.paths, min_size_mb=body.min_size_mb)
+    try:
+        return await find_duplicates(search_paths=body.paths, min_size_mb=body.min_size_mb)
+    except Exception as e:
+        logger.exception("Duplicates scan failed")
+        return {"success": False, "message": str(e), "error": str(e), "duplicates": []}
 
 
 @app.post("/api/large-files")
 async def large_files(body: LargeFilesRequest):
     from disk_usage_mcp.tools.scan import find_large_files
 
-    return await find_large_files(path=body.path, min_size_gb=body.min_size_gb, limit=body.limit)
+    try:
+        return await find_large_files(path=body.path, min_size_gb=body.min_size_gb, limit=body.limit)
+    except Exception as e:
+        logger.exception("Large-files scan failed for %s", body.path)
+        return {"success": False, "message": str(e), "error": str(e), "files": []}
 
 
 @app.post("/api/snapshot/take")
 async def take_snapshot(body: SnapshotRequest):
-    drives = []
-    for p in body.paths:
-        result = await run_dua(p, max_depth=1)
-        drives.append({"path": p, "data": result.get("data")})
-    ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    label = body.label.replace(" ", "_") if body.label else f"snapshot_{ts}"
-    filename = f"{label}_{ts}.json"
-    filepath = os.path.join(SNAPSHOTS_DIR, filename)
-    snapshot = {
-        "timestamp": ts,
-        "label": label,
-        "paths": body.paths,
-        "drives": drives,
-    }
-    with open(filepath, "w") as f:
-        json.dump(snapshot, f, indent=2, default=str)
-    return {
-        "success": True,
-        "message": f"Snapshot {filename} saved ({len(drives)} drives)",
-        "snapshot_file": filename,
-        "drives": len(drives),
-    }
+    try:
+        drives = []
+        for p in body.paths:
+            result = await run_dua(p, max_depth=1)
+            drives.append({"path": p, "data": result.get("data"), "error": result.get("error")})
+        failed = [d for d in drives if not d.get("data")]
+        if failed and len(failed) == len(drives):
+            err = failed[0].get("error") or "Scan failed for all paths"
+            return {"success": False, "message": err, "error": err}
+        ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        label = body.label.replace(" ", "_") if body.label else f"snapshot_{ts}"
+        filename = f"{label}_{ts}.json"
+        filepath = os.path.join(SNAPSHOTS_DIR, filename)
+        snapshot = {
+            "timestamp": ts,
+            "label": label,
+            "paths": body.paths,
+            "drives": drives,
+        }
+        with open(filepath, "w") as f:
+            json.dump(snapshot, f, indent=2, default=str)
+        return {
+            "success": True,
+            "message": f"Snapshot {filename} saved ({len(drives)} drives)",
+            "snapshot_file": filename,
+            "drives": len(drives),
+        }
+    except Exception as e:
+        logger.exception("Snapshot failed")
+        return {"success": False, "message": str(e), "error": str(e)}
 
 
 @app.get("/api/snapshots")

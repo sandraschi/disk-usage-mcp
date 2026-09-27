@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { AppLayout } from "./components/AppLayout";
 import Apps from "./pages/Apps";
 import Chat from "./pages/Chat";
+import Cloud from "./pages/Cloud";
 import Dashboard from "./pages/Dashboard";
 import Drives from "./pages/Drives";
 import Duplicates from "./pages/Duplicates";
@@ -19,6 +20,7 @@ export default function App() {
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/drives" element={<Drives />} />
+        <Route path="/cloud" element={<Cloud />} />
         <Route path="/duplicates" element={<Duplicates />} />
         <Route path="/inbox" element={<Inbox />} />
         <Route path="/tools" element={<Tools />} />
