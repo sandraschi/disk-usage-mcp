@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 const ROUTES: { path: string; heading: RegExp; testid: string }[] = [
   { path: "/dashboard", heading: /reclaim space/i, testid: "dashboard" },
   { path: "/drives", heading: /treemap scanner/i, testid: "drives-page" },
+  { path: "/cloud", heading: /cloud storage/i, testid: "cloud-page" },
   { path: "/duplicates", heading: /duplicate finder/i, testid: "duplicates-page" },
   { path: "/inbox", heading: /snapshots/i, testid: "inbox-page" },
   { path: "/tools", heading: /^tools$/i, testid: "tools-page" },
@@ -41,4 +42,30 @@ test("snapshots API round-trips through the UI backend", async ({ page, request 
   expect(health.ok()).toBeTruthy();
   await page.goto("/inbox");
   await expect(page.getByTestId("inbox-page")).toBeVisible();
+});
+
+test("drives page lists connected drives without a scanner", async ({ page }) => {
+  await page.goto("/drives");
+  await expect(page.getByTestId("drives-overview")).toBeVisible();
+  await expect(page.getByTestId("drives-overview")).toContainText(/connected drives|Probing|No drives|not running/i);
+});
+
+test("duplicates page shows safety rule and BC verify panel", async ({ page }) => {
+  await page.goto("/duplicates");
+  await expect(page.getByTestId("duplicates-safety")).toBeVisible();
+  await expect(page.getByTestId("duplicates-verify")).toBeVisible();
+  await expect(page.getByTestId("peer-badge-beyondcompare")).toBeVisible();
+});
+
+test("peers API degrades dialogically when companions are down", async ({ request }) => {
+  const peers = await request.get("http://127.0.0.1:11114/api/peers/status");
+  expect(peers.ok()).toBeTruthy();
+  const body = await peers.json();
+  expect(body.success).toBe(true);
+  expect(body.peers.beyondcompare).toHaveProperty("reachable");
+  const compare = await request.post("http://127.0.0.1:11114/api/peers/bc/compare", {
+    data: { left_path: "Z:\\nope-1", right_path: "Z:\\nope-2" },
+  });
+  expect(compare.ok()).toBeTruthy();
+  expect((await compare.json()).success).toBe(false);
 });

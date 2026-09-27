@@ -580,10 +580,15 @@ async def get_skill(name: str):
 @app.get("/api/setup/status")
 async def setup_status():
     """Binary prerequisites for onboarding (dua-cli, czkawka). No keys, no auth."""
-    import shutil as _shutil
+    from disk_usage_mcp.runner import _resolve_binary
 
-    dua = _shutil.which(DUA_BIN)
-    czkawka = _shutil.which(CZKAWKA_BIN) or _shutil.which("czkawka_cli") or _shutil.which("windows_czkawka_cli")
+    # _resolve_binary returns its input unchanged when nothing is found, so
+    # any result that is not one of the candidate names is a real path.
+    dua_hit = _resolve_binary(DUA_BIN)
+    dua = "" if dua_hit == DUA_BIN else dua_hit
+    czkawka_names = (CZKAWKA_BIN, "czkawka_cli", "windows_czkawka_cli")
+    czkawka_hit = _resolve_binary(CZKAWKA_BIN, czkawka_names[1:])
+    czkawka = "" if czkawka_hit in czkawka_names else czkawka_hit
     ready = bool(dua and czkawka)
     return {
         "ready": ready,

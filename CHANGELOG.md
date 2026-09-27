@@ -1,5 +1,21 @@
 # Changelog — disk-usage-mcp
 
+## 2026-09-27 — winget + dua-2.44 hardening, /mcp mount fix, BC crossconnect
+
+- Scanner reliability: `_resolve_binary` also checks `%LOCALAPPDATA%\Microsoft\WinGet\Links`
+  (stale-shell proof); `/api/setup/status` uses the same resolver (was `shutil.which`-only)
+- dua 2.44 parsing: parse-FIRST on nonzero exit (drive roots always exit 1 on locked system
+  files), `<N IO Error(s)>` marker stripping (singular + plural), child-size rollup into
+  parents (dua prints own-sizes; treemap was all zeros), `total <N IO Errors>` summary dropped
+- Boot-path fix: fleet launcher now serves `disk_usage_mcp.server:app` (module-level built app);
+  raw `http_app:app` had NO /mcp mount — HTTP MCP 404'd in production while smoke tests passed
+- Crossconnect C1: beyondcompare-mcp verify flow (vendored base + MCP-transport adapter,
+  `/api/peers/*`, `verify_folders_with_bc`, Duplicates verify panel + PeerBadge, skill division)
+- Pages: Drives connected-overview, new Cloud page; Duplicates safety banner (classical-music rule)
+- Findings for BC's own assfix (not patched here): broken fastmcp venv (reinstalled env-only),
+  missing /mcp mount (`from_fastapi` never mounted — POST /mcp 404s on :10841)
+- Tests: 47 pytest green; Playwright API-level test green, browser tests need interactive shell
+
 ## 2026-09-21 — assfix round 2 (fix-all)
 
 - Backend: prompts (reclaim-plan, snapshot-compare), skill:// resource, Prefab cards

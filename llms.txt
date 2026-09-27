@@ -17,3 +17,6 @@ FastMCP server for disk usage analysis, duplicate detection, and multi-drive vis
 - **disk_usage** - Portmanteau: scan / tree / drive_overview
 - **parse_dj_database** - Parse VirtualDJ / Serato DJ library database
 - **server_help** - List tools and REST endpoints
+- **list_connected_drives** - All connected drives + stats (no scanner needed)
+- **cloud_status** - OneDrive + Google sync-folder state
+- **verify_folders_with_bc** - Beyond Compare folder verdict (soft-degrades when peer down)

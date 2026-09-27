@@ -1,6 +1,6 @@
 # Disk Usage MCP — Status
 
-**Last updated:** 2026-09-21
+**Last updated:** 2026-09-27
 **Version:** 0.1.0
 **SOTA:** FastMCP 3.4.4, React 19, Vite 6, Tailwind v4, pyright clean
 
@@ -10,16 +10,17 @@
 
 | Area | What | Status |
 |------|------|--------|
-| **MCP Server** | 9 tools: scan_path, find_large_files, get_drive_overview, find_duplicates, disk_usage, parse_dj_database, server_help, show_drives_card, show_duplicates_card | Done |
+| **MCP Server** | 12 tools (+list_connected_drives, cloud_status, verify_folders_with_bc) | Done |
 | **Prompts/Resources** | reclaim-plan, snapshot-compare; drive://list, skill://disk-usage | Done |
-| **Async runner** | dua + czkawka wrappers, timeouts, logger.exception paths | Done |
-| **FastAPI REST** | health/status/capabilities/skills/logs/setup/fleet; scan/duplicates/large-files; snapshot take/list/get/diff/delete; LLM discover/providers/models/chat/stream; diagnostics; shutdown; /docs | Done |
-| **MCP streamable HTTP** | /mcp mounted with path="/" + merged lifespan (live-verified) | Done |
+| **Async runner** | dua + czkawka wrappers, timeouts, missing-binary dialogic errors (no more 500s) | Done |
+| **FastAPI REST** | health/status/capabilities/skills/logs/setup/fleet; drives; cloud/status; peers/status + peers/bc/compare; scan/duplicates/large-files; snapshot take/list/get/diff/delete; LLM discover/providers/models/chat/stream; diagnostics; shutdown; /docs | Done |
+| **MCP streamable HTTP** | /mcp via disk_usage_mcp.server:app (fleet target fixed — raw http_app:app had NO mount, 404 in prod) | Done |
 | **Local LLM** | Ollama + LM Studio proxy, no keys, SSE streaming, GPU note | Done |
-| **Web dashboard** | 11 pages: Dashboard, Drives, Duplicates, Inbox, Tools, Skills, Chat, Logs, Apps, Settings, Help — shortcuts, zoom, modals, dark theme, a11y pass | Done |
+| **Web dashboard** | 12 pages (+Cloud): Dashboard, Drives (connected overview + treemap), Cloud, Duplicates (safety rule + BC verify), Inbox, Tools, Skills, Chat, Logs, Apps, Settings, Help — shortcuts, zoom, modals, dark theme, a11y pass | Done |
+| **Crossconnects** | beyondcompare-mcp WIRED (vendored base + MCP-transport adapter, PeerBadge); google-docs + multi-backup documented PLANNED; registry entry | Done |
 | **Session injection** | .claude-plugin + hooks, .cursorrules, .windsurfrules, copilot, opencode + antigravity skills | Done |
-| **Skills** | disk-usage SKILL.md served via resource + REST + page | Done |
-| **Testing** | 33 pytest (cov 46%, floor 40), tsc, pyright, Biome, Playwright e2e 4/4 | Done |
+| **Skills** | disk-usage SKILL.md: HW map, rotation realities, classical-music rule, BC-confirms division | Done |
+| **Testing** | 47 pytest (floor 40), tsc, pyright, Biome, Playwright: API-level green here, 6 browser tests need interactive shell (chromium cannot launch from sandboxed agent shell — env limitation, not app bug) | Done |
 | **Lint** | ruff (T20) + format + pyright clean | Done |
 | **Git** | Committed, pushed (CI file local-only: needs workflow scope) | Done |
 | **Packaging** | 3-4-100 prompts, wipe+recopy pack recipe, pack + validate green | Done |
