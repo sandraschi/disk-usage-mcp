@@ -1,6 +1,16 @@
 # Changelog — disk-usage-mcp
 
-## 2026-09-27 — winget + dua-2.44 hardening, /mcp mount fix, BC crossconnect
+## 2026-09-27 — crossconnects C1+C2+C3 live
+
+- C1 beyondcompare-mcp (WIRED, live-proven both verdicts): verify flow + PeerBadge;
+  BC-side fixes landed in beyondcompare-mcp@d008f21 (/mcp mount, drop `script-exit`,
+  report-parsed verdicts) after trial-expiry banner spotted (license grace ~6 days)
+- C2 google-docs-mcp (WIRED): `google_drive_state` + `/api/peers/google/state` (account +
+  mount; quota has no upstream op — honestly null); Cloud page account badge
+- C3 multi-backup-mcp (WIRED, read-only): `backup_preflight` + `/api/peers/backup/*` +
+  Drives preflight panel; ranks peer dests first, then alternatives (500 GB → N:\,
+  configured Desktop dest on full C: flagged unfit)
+- Tests: 56 pytest green; Playwright API-level tests green, browser legs need interactive shell
 
 - Scanner reliability: `_resolve_binary` also checks `%LOCALAPPDATA%\Microsoft\WinGet\Links`
   (stale-shell proof); `/api/setup/status` uses the same resolver (was `shutil.which`-only)

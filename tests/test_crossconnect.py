@@ -95,3 +95,115 @@ async def test_peers_bc_compare_validates_paths(client):
     )
     assert resp.status_code == 200
     assert resp.json()["success"] is False
+
+
+@pytest.fixture
+def dead_rest_peers(monkeypatch):
+    monkeypatch.setenv("GOOGLE_DOCS_MCP_URL", "http://127.0.0.1:9")
+    monkeypatch.setenv("MULTI_BACKUP_MCP_URL", "http://127.0.0.1:9")
+
+
+def test_google_state_dead_peer_local_half_survives(dead_rest_peers):
+    """Peer down: google_drive_state still returns local mount state, success True."""
+    from disk_usage_mcp.services.google_crossconnect import google_drive_state
+
+    result = google_drive_state()
+    assert result["success"] is True
+    assert result["reachable"] is False
+    assert result["auth"] is None
+    assert "local" in result
+    assert result["quota"] is None
+    assert "upstream" in result["quota_note"]
+
+
+def test_backup_destinations_dead_peer(dead_rest_peers):
+    from disk_usage_mcp.services.backup_crossconnect import backup_destinations
+
+    result = backup_destinations()
+    assert result["success"] is False
+    assert result["reachable"] is False
+    assert result["destinations"] == []
+    assert "multi-backup-mcp" in result["message"]
+
+
+def test_preflight_ranks_drives_without_peer(dead_rest_peers, monkeypatch):
+    """Peer down + fake drives: smallest fitting drive wins, honest note appended."""
+    import disk_usage_mcp.services.backup_crossconnect as bc
+
+    fake = [
+        {"drive": "M:\\", "reachable": True, "free_gb": 100.0, "percent_used": 50.0},
+        {"drive": "N:\\", "reachable": True, "free_gb": 600.0, "percent_used": 30.0},
+        {"drive": "F:\\", "reachable": True, "free_gb": 0.7, "percent_used": 100.0},
+    ]
+    monkeypatch.setattr("disk_usage_mcp.drives.list_connected_drives", lambda: fake)
+    result = bc.backup_preflight(int(500 * 1024**3))
+    assert result["success"] is True
+    assert result["recommendation"] == "N:\\"
+    assert "ranked connected drives only" in result["message"]
+
+
+def test_preflight_fits_nowhere(dead_rest_peers, monkeypatch):
+    import disk_usage_mcp.services.backup_crossconnect as bc
+
+    fake = [{"drive": "F:\\", "reachable": True, "free_gb": 0.7, "percent_used": 100.0}]
+    monkeypatch.setattr("disk_usage_mcp.drives.list_connected_drives", lambda: fake)
+    result = bc.backup_preflight(int(500 * 1024**3))
+    assert result["success"] is True
+    assert result["recommendation"] is None
+    assert "30 TB" in result["message"]
+
+
+def test_preflight_missing_drive_flagged(dead_rest_peers, monkeypatch):
+    """Explicit attic/Steve's path: flagged not-connected, never crashes."""
+    import disk_usage_mcp.services.backup_crossconnect as bc
+
+    monkeypatch.setattr("disk_usage_mcp.drives.list_connected_drives", lambda: [])
+    result = bc.backup_preflight(int(1 * 1024**3), "Z:\\Backups")
+    assert result["success"] is True
+    assert result["candidates"][0]["fits"] is False
+    assert "attic" in result["candidates"][0]["reason"]
+
+
+def test_preflight_peer_dest_full_recommends_alternative(monkeypatch):
+    """Peer dest on full C: + free M:: recommend the alternative, flag the dest."""
+    import disk_usage_mcp.services.backup_crossconnect as bc
+
+    fake_drives = [
+        {"drive": "C:\\", "reachable": True, "free_gb": 12.5, "percent_used": 99.3},
+        {"drive": "M:\\", "reachable": True, "free_gb": 1700.0, "percent_used": 53.0},
+    ]
+    monkeypatch.setattr("disk_usage_mcp.drives.list_connected_drives", lambda: fake_drives)
+    monkeypatch.setattr(
+        bc, "backup_destinations", lambda: {"success": True, "reachable": True, "destinations": ["C:\\Backups"]}
+    )
+    result = bc.backup_preflight(int(500 * 1024**3))
+    assert result["success"] is True
+    assert result["reachable"] is True
+    assert result["recommendation"] == "M:\\"
+    dest = next(c for c in result["candidates"] if c["path"] == "C:\\Backups")
+    assert dest["fits"] is False
+    assert dest["backup_destination"] is True
+
+
+def test_preflight_rejects_negative():
+    from disk_usage_mcp.services.backup_crossconnect import backup_preflight
+
+    result = backup_preflight(-1)
+    assert result["success"] is False
+
+
+@pytest.mark.asyncio
+async def test_peers_google_state_endpoint_shape(client):
+    resp = await client.get("/api/peers/google/state")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["success"] is True
+    assert "local" in data
+    assert data["quota"] is None
+
+
+@pytest.mark.asyncio
+async def test_peers_preflight_endpoint_shape(client):
+    resp = await client.post("/api/peers/backup/preflight", json={"bytes_needed_gb": 1})
+    assert resp.status_code == 200
+    assert resp.json()["success"] is True

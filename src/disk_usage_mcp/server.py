@@ -142,6 +142,57 @@ async def verify_folders_with_bc(
 mcp.tool(name="verify_folders_with_bc", annotations=_READONLY, output_schema=_OBJECT_SCHEMA)(verify_folders_with_bc)
 
 
+async def google_drive_state() -> dict:
+    """Google account state (google-docs-mcp, optional) + local mount state (always).
+
+    Drive quota is NOT available — google-docs-mcp has no quota/about op
+    (verified 2026-09-27). Returns quota=None with an upstream note, honestly.
+
+    ## Return Format
+    {"success": bool, "message": str, "auth": {...}|None, "local": {...}, "quota": None}
+
+    ## Examples
+    await google_drive_state()
+    """
+    from disk_usage_mcp.services.google_crossconnect import google_drive_state as _state
+
+    try:
+        return _state()
+    except Exception as e:
+        logger.exception("google_drive_state failed")
+        return {"success": False, "message": str(e), "error": str(e)}
+
+
+mcp.tool(name="google_drive_state", annotations=_READONLY, output_schema=_OBJECT_SCHEMA)(google_drive_state)
+
+
+async def backup_preflight(
+    bytes_needed_gb: Annotated[float, Field(description="GB that must fit somewhere")],
+    destination: Annotated[str, Field(description="Optional single path to check instead of ranking")] = "",
+) -> dict:
+    """Where can N GB go? Ranks multi-backup destinations + connected drives.
+
+    Read-only: never writes peer destinations (their ownership). Degrades to
+    connected drives when multi-backup-mcp is down.
+
+    ## Return Format
+    {"success": bool, "message": str, "recommendation": str|None, "candidates": [...]}
+
+    ## Examples
+    await backup_preflight(bytes_needed_gb=500)
+    """
+    from disk_usage_mcp.services.backup_crossconnect import backup_preflight as _preflight
+
+    try:
+        return _preflight(int(bytes_needed_gb * 1024**3), destination)
+    except Exception as e:
+        logger.exception("backup_preflight failed")
+        return {"success": False, "message": str(e), "error": str(e), "candidates": []}
+
+
+mcp.tool(name="backup_preflight", annotations=_READONLY, output_schema=_OBJECT_SCHEMA)(backup_preflight)
+
+
 @mcp.prompt(name="reclaim-plan", description="Plan a disk-space reclamation pass across drives.")
 def reclaim_plan_prompt(
     drives: Annotated[str, Field(description="Comma-separated drive roots, e.g. D:\\,E:\\")] = "D:\\",

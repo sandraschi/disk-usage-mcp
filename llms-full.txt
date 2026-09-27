@@ -115,6 +115,21 @@ verify_folders_with_bc(left_path="D:\\Media", right_path="E:\\Media")
 Division of labour: disk-usage suspects (dua trees, czkawka hash groups), BC confirms
 (byte-level). A hash match is a candidate list, never a deletion verdict.
 
+### google_drive_state (google-docs-mcp crossconnect)
+
+```
+google_drive_state()
+→ {"success": true, "auth": {"authenticated": ...}, "local": {...}, "quota": null,
+   "quota_note": "Drive quota needs a google-docs-mcp `about` op (upstream)."}
+```
+
+### backup_preflight (multi-backup-mcp crossconnect, read-only)
+
+```
+backup_preflight(bytes_needed_gb=500)
+→ {"success": true, "recommendation": "M:\\", "candidates": [{"path": ..., "fits": ...}]}
+```
+
 ### show_drives_card / show_duplicates_card (Prefab, app=True)
 
 ```

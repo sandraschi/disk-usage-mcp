@@ -17,6 +17,8 @@ All MCP tools return dialogic `{success, message, ...}` and carry
 | `list_connected_drives()` | All connected drives + stats (no scanner needed) |
 | `cloud_status()` | OneDrive + Google sync-folder state (local detection, no OAuth) |
 | `verify_folders_with_bc(left, right)` | BC authoritative verdict (soft-degrades when peer down) |
+| `google_drive_state()` | Google account state (peer) + mount state; quota upstream-planned |
+| `backup_preflight(gb, dest?)` | Rank destinations/drives by free space (read-only) |
 | `show_drives_card()` | Prefab in-chat drives card (`app=True`) |
 | `show_duplicates_card(search_paths, min_size_mb)` | Prefab in-chat duplicates card (`app=True`) |
 
@@ -34,6 +36,7 @@ All MCP tools return dialogic `{success, message, ...}` and carry
 
 Health/status/capabilities/skills/logs/setup/fleet; drives (connected list); cloud/status (OneDrive+Google);
 peers/status (companion reachability); peers/bc/compare (BC folder verdict proxy);
+peers/google/state (account + mount); peers/backup/destinations + preflight (fit ranking);
 scan/duplicates/large-files; snapshot take/list/get/diff/delete;
 snapshot take/list/get/diff/delete; local LLM discover/providers/models/chat/stream;
 `/api/v1/diagnostics`; `POST /api/shutdown` (orderly exit for the fleet launcher);
@@ -41,7 +44,7 @@ snapshot take/list/get/diff/delete; local LLM discover/providers/models/chat/str
 
 ## Dashboard
 
-Pages: Dashboard (hero + KPIs + onboarding cue), Drives (connected overview + treemap), Cloud
-(OneDrive + Google sync state), Duplicates (with safety rule + BC verify panel), Inbox (snapshots take/diff/delete), Tools (capability runner), Skills, Chat
+Pages: Dashboard (hero + KPIs + onboarding cue), Drives (connected overview + treemap + preflight), Cloud
+(OneDrive + Google sync state + account badge), Duplicates (with safety rule + BC verify panel), Inbox (snapshots take/diff/delete), Tools (capability runner), Skills, Chat
 (skill-first, 5 personalities, streaming, 100-msg localStorage, export),
 Logs, Apps (fleet hub), Settings (local LLM), Help (onboarding + endpoints).

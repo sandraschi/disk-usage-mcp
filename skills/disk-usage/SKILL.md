@@ -27,8 +27,8 @@ A beautiful mess — never assume a fixed drive map. Always start with
 - **Cloud:** OneDrive syncs to `%USERPROFILE%\OneDrive` (lives on C: — which itself is
   near-full, so OneDrive sync pressure and C: pressure are the same problem). Google Drive
   for Desktop is a VIRTUAL mount labeled "Google Drive" (H:\ on Goliath — NOT a physical
-  disk; do not treemap-scan it as one). Quota APIs are not wired — `cloud_status`
-  reports local sync-folder state only.
+  disk; do not treemap-scan it as one). Account state comes from google-docs-mcp
+  (`google_drive_state`); Drive quota has no upstream op — say so, never invent numbers.
 
 ## Available tools
 
@@ -41,6 +41,10 @@ A beautiful mess — never assume a fixed drive map. Always start with
 - `disk_usage(operation, ...)` — portmanteau: scan/tree/drive_overview.
 - `verify_folders_with_bc(left_path, right_path)` — authoritative Beyond Compare verdict
   (soft-degrades when beyondcompare-mcp is down).
+- `google_drive_state()` — Google account state (peer, optional) + local mount (always).
+  Quota is NOT available: google-docs-mcp has no quota/about op. Say so; don't invent numbers.
+- `backup_preflight(bytes_needed_gb, destination?)` — where N GB fits, ranked by live space.
+  Read-only: never writes multi-backup destinations (their ownership, incl. attic/Steve's ledger).
 
 ## The division of labour (disk-usage suspects, BC confirms)
 
@@ -50,6 +54,14 @@ deletion verdict — it is a suspect list. The confirm step is `verify_folders_w
 `compare_folders` over MCP. Same for rotation checks: "are E:\Media and the BYOD copy
 in sync?" is a BC question, not a dua question. If BC is down (gray badge), say so
 and fall back to quarantine-first — do not upgrade suspects to verdicts yourself.
+
+## Companion questions (1-hop)
+
+- **"Is Google Drive signed in? synced?"** — `google_drive_state()`: account state from
+  google-docs-mcp when up, local mount state always. Quota: unwired upstream, say so.
+- **"Where do I put N GB? Is the backup target plugged in?"** — `backup_preflight()`:
+  ranks multi-backup destinations (when peer up) + connected drives by live free space.
+  Missing letters mean unplugged/attic/Steve's — say which.
 
 ## Before starting work
 

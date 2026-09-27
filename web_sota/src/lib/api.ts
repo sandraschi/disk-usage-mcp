@@ -268,6 +268,47 @@ export function bcCompareFolders(
   });
 }
 
+export interface GooglePeerState {
+  success: boolean;
+  message?: string;
+  reachable?: boolean;
+  auth?: { configured?: boolean; authenticated?: boolean; scopes?: string[] } | null;
+  local?: CloudProviderState;
+  quota?: null;
+  quota_note?: string;
+  error?: string;
+}
+
+export function getGooglePeerState(): Promise<GooglePeerState> {
+  return apiFetch<GooglePeerState>("/api/peers/google/state");
+}
+
+export interface PreflightCandidate {
+  path: string;
+  drive?: string;
+  free_gb?: number;
+  percent_used?: number;
+  fits: boolean;
+  reason?: string | null;
+}
+
+export interface PreflightResponse {
+  success: boolean;
+  message?: string;
+  reachable?: boolean;
+  need_gb?: number;
+  recommendation?: string | null;
+  candidates: PreflightCandidate[];
+  error?: string;
+}
+
+export function backupPreflight(gb: number, destination = ""): Promise<PreflightResponse> {
+  return apiFetch<PreflightResponse>("/api/peers/backup/preflight", {
+    method: "POST",
+    body: JSON.stringify({ bytes_needed_gb: gb, destination }),
+  });
+}
+
 export function getCloudStatus(): Promise<CloudStatusResponse> {
   return apiFetch<CloudStatusResponse>("/api/cloud/status");
 }

@@ -27,6 +27,8 @@
     { "name": "list_connected_drives", "description": "List all connected drives with usage stats (no scanner needed)" },
     { "name": "cloud_status", "description": "OneDrive + Google Drive sync-folder status (local detection)" },
     { "name": "verify_folders_with_bc", "description": "Authoritative Beyond Compare folder verdict (soft-degrades when peer down)" },
+    { "name": "google_drive_state", "description": "Google account state (peer) + local mount state; quota upstream-planned" },
+    { "name": "backup_preflight", "description": "Rank backup destinations/drives by live free space (read-only)" },
     { "name": "show_drives_card", "description": "Prefab card: available drives with usage stats" },
     { "name": "show_duplicates_card", "description": "Prefab card: duplicate-file groups across paths" }
   ]

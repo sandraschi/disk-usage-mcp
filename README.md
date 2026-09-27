@@ -65,8 +65,8 @@ servers in the `sandraschi` fleet to unlock extended features:
 | Companion Server | Feature Unlocked | Status | Setup |
 |---|---|---|---|
 | [`beyondcompare-mcp`](https://github.com/sandraschi/beyondcompare-mcp) | Authoritative folder-compare verdicts before delete/quarantine (WIRED: Duplicates verify panel, `verify_folders_with_bc`, `/api/peers/*`) | Optional | [Install Guide](https://github.com/sandraschi/beyondcompare-mcp/blob/main/INSTALL.md) |
-| [`google-docs-mcp`](https://github.com/sandraschi/google-docs-mcp) | Real Drive quota + sync state on the Cloud page (PLANNED: dialogic "not wired yet" until then) | Optional | [Install Guide](https://github.com/sandraschi/google-docs-mcp/blob/main/INSTALL.md) |
-| [`multi-backup-mcp`](https://github.com/sandraschi/multi-backup-mcp) | Backup preflight: target plugged in? room for N GB? (PLANNED) | Optional | [Install Guide](https://github.com/sandraschi/multi-backup-mcp/blob/main/INSTALL.md) |
+| [`google-docs-mcp`](https://github.com/sandraschi/google-docs-mcp) | Google account state on the Cloud page (WIRED: `google_drive_state`, `/api/peers/google/state`); Drive quota still needs an upstream `about` op | Optional | [Install Guide](https://github.com/sandraschi/google-docs-mcp/blob/main/INSTALL.md) |
+| [`multi-backup-mcp`](https://github.com/sandraschi/multi-backup-mcp) | Backup preflight — where N GB fits, ranked by live space (WIRED: `backup_preflight`, `/api/peers/backup/*`, Drives panel; read-only, destinations stay theirs) | Optional | [Install Guide](https://github.com/sandraschi/multi-backup-mcp/blob/main/INSTALL.md) |
 
 > **Division of labour:** disk-usage suspects (dua trees, czkawka hash groups), Beyond Compare
 > confirms (byte-level). A hash match is a candidate list, never a deletion verdict.

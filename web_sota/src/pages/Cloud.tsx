@@ -1,6 +1,7 @@
 import { Cloud as CloudIcon, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
-import { type CloudProviderState, type CloudStatusResponse, getCloudStatus } from "../lib/api";
+import { PeerBadge } from "../components/PeerBadge";
+import { type CloudProviderState, type CloudStatusResponse, getCloudStatus, getGooglePeerState } from "../lib/api";
 
 function ProviderCard({ title, state, hint }: { title: string; state: CloudProviderState | undefined; hint: string }) {
   if (!state) {
@@ -36,6 +37,7 @@ function ProviderCard({ title, state, hint }: { title: string; state: CloudProvi
 
 export default function Cloud() {
   const [status, setStatus] = useState<CloudStatusResponse | null>(null);
+  const [googleAuth, setGoogleAuth] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -43,7 +45,16 @@ export default function Cloud() {
     setLoading(true);
     setError("");
     try {
-      setStatus(await getCloudStatus());
+      const [local, peer] = await Promise.all([getCloudStatus(), getGooglePeerState().catch(() => null)]);
+      setStatus(local);
+      if (peer?.auth) {
+        const a = peer.auth;
+        setGoogleAuth(
+          a.authenticated ? `signed in${a.scopes?.length ? ` (${a.scopes.length} scopes)` : ""}` : "not signed in",
+        );
+      } else {
+        setGoogleAuth(null);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Request failed");
     } finally {
@@ -73,9 +84,18 @@ export default function Cloud() {
       </div>
 
       <p className="text-sm text-zinc-400">
-        Local sync-folder state only for now — cloud quota needs OneDrive (Microsoft Graph) and Google Drive API OAuth,
-        which is not wired yet. See Help → Onboarding for the account setup path.
+        Local sync-folder state plus live Google account state (via google-docs-mcp). Drive quota still needs a
+        google-docs <code className="text-zinc-300">about</code> op — upstream, honestly unwired. OneDrive quota needs
+        Microsoft Graph — same story.
       </p>
+      <div className="flex gap-2 flex-wrap">
+        <PeerBadge peer="google-docs" label="google-docs-mcp" />
+        {googleAuth && (
+          <span className="text-xs text-zinc-300 self-center" data-testid="cloud-google-auth">
+            Google account: {googleAuth}
+          </span>
+        )}
+      </div>
 
       {loading && <p className="text-sm text-zinc-400">Checking sync folders…</p>}
       {error && (

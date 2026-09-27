@@ -62,6 +62,14 @@ TOOL_DEFS = [
         "name": "verify_folders_with_bc",
         "description": "Authoritative Beyond Compare folder verdict (disk-usage suspects, BC confirms)",
     },
+    {
+        "name": "google_drive_state",
+        "description": "Google account state (peer) + local mount state (always); quota upstream-planned",
+    },
+    {
+        "name": "backup_preflight",
+        "description": "Rank backup destinations/drives by live free space for N bytes (read-only)",
+    },
     {"name": "show_drives_card", "description": "Prefab card: available drives with usage stats"},
     {"name": "show_duplicates_card", "description": "Prefab card: duplicate-file groups across paths"},
 ]
@@ -92,6 +100,11 @@ class BcCompareRequest(BaseModel):
     left_path: str
     right_path: str
     include_subfolders: bool = True
+
+
+class PreflightRequest(BaseModel):
+    bytes_needed_gb: float = Field(ge=0)
+    destination: str = ""
 
 
 class LlmChatRequest(BaseModel):
@@ -311,6 +324,42 @@ async def peers_bc_compare(body: BcCompareRequest):
         return {"success": False, "message": str(e), "error": str(e)}
 
 
+@app.get("/api/peers/google/state")
+async def peers_google_state():
+    """Google account state (peer, optional) + local mount state (always)."""
+    from disk_usage_mcp.services.google_crossconnect import google_drive_state
+
+    try:
+        return google_drive_state()
+    except Exception as e:
+        logger.exception("Google state proxy failed")
+        return {"success": False, "message": str(e), "error": str(e)}
+
+
+@app.get("/api/peers/backup/destinations")
+async def peers_backup_destinations():
+    """Read-only: peer backup destinations (their ownership, our lens)."""
+    from disk_usage_mcp.services.backup_crossconnect import backup_destinations
+
+    try:
+        return backup_destinations()
+    except Exception as e:
+        logger.exception("Backup destinations proxy failed")
+        return {"success": False, "message": str(e), "error": str(e), "destinations": []}
+
+
+@app.post("/api/peers/backup/preflight")
+async def peers_backup_preflight(body: PreflightRequest):
+    """Where can N GB go? Ranked by live free space. Read-only, never 500s."""
+    from disk_usage_mcp.services.backup_crossconnect import backup_preflight
+
+    try:
+        return backup_preflight(int(body.bytes_needed_gb * 1024**3), body.destination)
+    except Exception as e:
+        logger.exception("Backup preflight failed")
+        return {"success": False, "message": str(e), "error": str(e), "candidates": []}
+
+
 @app.get("/api/capabilities")
 async def capabilities():
     return {
@@ -331,6 +380,9 @@ async def capabilities():
             "/api/cloud/status",
             "/api/peers/status",
             "/api/peers/bc/compare",
+            "/api/peers/google/state",
+            "/api/peers/backup/destinations",
+            "/api/peers/backup/preflight",
             "/api/scan",
             "/api/duplicates",
             "/api/large-files",

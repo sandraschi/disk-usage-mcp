@@ -1,8 +1,17 @@
 import { motion } from "framer-motion";
-import { Camera, HardDrive, RefreshCw, Scan } from "lucide-react";
+import { Camera, HardDrive, PackageCheck, RefreshCw, Scan } from "lucide-react";
 import { useEffect, useState } from "react";
+import { PeerBadge } from "../components/PeerBadge";
 import { TreemapView, type TreeNode } from "../components/TreemapView";
-import { type ConnectedDrive, getDrives, listSnapshots, scanPath, takeSnapshot } from "../lib/api";
+import {
+  backupPreflight,
+  type ConnectedDrive,
+  getDrives,
+  listSnapshots,
+  type PreflightResponse,
+  scanPath,
+  takeSnapshot,
+} from "../lib/api";
 
 function usageColor(pct: number): string {
   if (pct >= 95) return "bg-red-500";
@@ -217,6 +226,78 @@ export default function Drives() {
           </p>
         </div>
       )}
+
+      <PreflightPanel />
     </div>
+  );
+}
+
+function PreflightPanel() {
+  const [gb, setGb] = useState(500);
+  const [checking, setChecking] = useState(false);
+  const [result, setResult] = useState<PreflightResponse | null>(null);
+
+  const check = async () => {
+    setChecking(true);
+    setResult(null);
+    try {
+      setResult(await backupPreflight(gb));
+    } catch (e) {
+      setResult({ success: false, message: e instanceof Error ? e.message : "Request failed", candidates: [] });
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  return (
+    <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 space-y-3" data-testid="drives-preflight">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <h3 className="text-sm font-medium text-zinc-200 flex items-center gap-2">
+          <PackageCheck className="h-4 w-4 text-sky-400" />
+          Backup preflight — where can N GB go?
+        </h3>
+        <PeerBadge peer="multi-backup" label="multi-backup" />
+      </div>
+      <p className="text-xs text-zinc-400">
+        Ranks multi-backup destinations + connected drives by live free space. Read-only; destinations stay owned by
+        multi-backup-mcp.
+      </p>
+      <div className="flex gap-3 flex-wrap items-center">
+        <input
+          type="number"
+          min={1}
+          value={gb}
+          onChange={(e) => setGb(Number(e.target.value))}
+          className="w-24 bg-zinc-800 border border-zinc-700 rounded-lg px-2 py-2 text-zinc-100 text-sm text-center focus:outline-none focus:border-sky-500"
+          title="GB needed"
+          aria-label="GB needed"
+        />
+        <span className="text-sm text-zinc-400">GB</span>
+        <button
+          onClick={() => void check()}
+          disabled={checking}
+          className="flex items-center gap-2 px-4 py-2 bg-sky-700 hover:bg-sky-600 disabled:bg-zinc-700 rounded-lg text-sm font-medium transition-colors"
+        >
+          {checking ? "Checking…" : "Check fit"}
+        </button>
+      </div>
+      {result && (
+        <div className="text-sm" data-testid="drives-preflight-result">
+          <p className={result.recommendation ? "text-emerald-300" : "text-amber-300"}>{result.message}</p>
+          {result.candidates.length > 0 && (
+            <ul className="mt-2 space-y-1">
+              {result.candidates.slice(0, 12).map((c) => (
+                <li key={c.path} className="text-xs text-zinc-400 font-mono">
+                  <span className={c.fits ? "text-emerald-400" : "text-red-400"}>{c.fits ? "fits " : "no "}</span>
+                  {c.path}
+                  {c.free_gb !== undefined && ` — ${c.free_gb.toLocaleString()} GB free`}
+                  {c.reason && !c.fits && ` (${c.reason})`}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </section>
   );
 }

@@ -69,3 +69,18 @@ test("peers API degrades dialogically when companions are down", async ({ reques
   expect(compare.ok()).toBeTruthy();
   expect((await compare.json()).success).toBe(false);
 });
+
+test("google state + preflight APIs never 500", async ({ request }) => {
+  const gstate = await request.get("http://127.0.0.1:11114/api/peers/google/state");
+  expect(gstate.ok()).toBeTruthy();
+  const gbody = await gstate.json();
+  expect(gbody.success).toBe(true);
+  expect(gbody.quota).toBeNull();
+  const preflight = await request.post("http://127.0.0.1:11114/api/peers/backup/preflight", {
+    data: { bytes_needed_gb: 1 },
+  });
+  expect(preflight.ok()).toBeTruthy();
+  const pbody = await preflight.json();
+  expect(pbody.success).toBe(true);
+  expect(Array.isArray(pbody.candidates)).toBe(true);
+});
