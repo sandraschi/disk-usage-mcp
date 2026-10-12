@@ -716,7 +716,7 @@ async def _llm_state() -> dict:
         "lmstudio": {"available": True, "models": lmstudio_models}
         if lmstudio_models or await _port_open(1234)
         else {"available": False, "models": []},
-        "gpu": _gpu_info(),
+        "gpu": await asyncio.to_thread(_gpu_info),
     }
 
 
