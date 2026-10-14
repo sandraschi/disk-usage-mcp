@@ -1,4 +1,4 @@
-﻿# Per-repo fleet start config for disk-usage-mcp
+# Per-repo fleet start config for disk-usage-mcp
 # Edit ports/backend target here - start.ps1 is fleet-standard.
 @{
     Name         = 'disk-usage-mcp'
@@ -10,6 +10,7 @@
         Kind          = 'uvicorn-web-app'
         UvicornTarget = 'disk_usage_mcp.server:app'
         SyncExtras    = @('dev')
+        SyncOnStart  = $true
         Env           = @{ WEB_PORT = '11114' }
     }
     Frontend = @{
